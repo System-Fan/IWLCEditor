@@ -1,6 +1,8 @@
 extends PanelContainer
 class_name NewNumberEdit
 
+signal valueSet(value:PackedInt64Array)
+
 const FNUMBEREDIT:Font = preload("res://resources/fonts/fNumberEdit.tres")
 
 enum CURSOR_MODE {NORMAL, NUMBER}
@@ -25,12 +27,12 @@ var numberEnds:Array[int] = []
 var numberValues:Array[int] = []
 var numberSemiNegative:Array[bool] = [] # if a number is negative but like only kinda (the - is instead of a + of the number before it, not part of the number)
 var texts:Array[String] = [] # one at the start and one after each number. may be empty
+var currentExpression:Array = []
+var expressionErrored:bool = false
 
 func _ready() -> void:
 	parseText()
 	buildText()
-
-enum TOKEN {NUMBER, LBRACKET, RBRACKET, CROSS, DASH, X, SLASH, I}
 
 func parseText() -> void:
 	textLen = len(text)
@@ -45,7 +47,9 @@ func parseText() -> void:
 	texts.clear()
 	numbers = 0
 	var isNumber:bool
-	var tokens:Array[Array] = [] # array[array[token type, data?]]
+	var front:Array[Vector2i] = []
+	var tokens:Array[Vector2i] = []
+	var layer:int = 0
 	for symbol in text + " ":
 		isNumber = "0123456789".contains(symbol) or (!isNumber and symbol == "-" and i + 1 != textLen and "0123456789".contains(text[i+1]))
 		# end of text
@@ -67,29 +71,159 @@ func parseText() -> void:
 				numberValues.append(value)
 				thisNumberStart = -1
 				previousNumberEnd = i
-				tokens.append([TOKEN.NUMBER, value])
+				tokens.append(Vector2i(TOKEN.NUMBER,numbers-1))
 			match symbol:
-				"(": tokens.append([TOKEN.LBRACKET])
-				")": tokens.append([TOKEN.RBRACKET])
-				"+": tokens.append([TOKEN.CROSS])
-				"-": tokens.append([TOKEN.DASH])
-				"x": tokens.append([TOKEN.X])
-				"/": tokens.append([TOKEN.SLASH])
-				"i": tokens.append([TOKEN.I])
+				")":
+					layer -= 1
+					if layer < 0: # insert missing lbracket at start
+						layer = 0
+						front.append(Vector2i(TOKEN.LBRACKET, 0))
+					tokens.append(Vector2i(TOKEN.RBRACKET, 0))
+				"(":
+					layer += 1
+					tokens.append(Vector2i(TOKEN.LBRACKET, 0))
+				"+": tokens.append(Vector2i(TOKEN.CROSS, 0))
+				"-": tokens.append(Vector2i(TOKEN.DASH, 0))
+				"x": tokens.append(Vector2i(TOKEN.X, 0))
+				"/": tokens.append(Vector2i(TOKEN.SLASH, 0))
+				"i": tokens.append(Vector2i(TOKEN.I, 0))
 		i += 1
-	print(textLen, numberStarts, numberEnds, numberValues, texts)
-	# build tree
+	# insert missing rbrackets at end
+	while layer > 0:
+		layer -= 1
+		tokens.append(Vector2i(TOKEN.RBRACKET, 0))
+	front.append_array(tokens)
+	tokens = front
+	# parse tokens into expression
+	if tokens: currentExpression = parseTokens(tokens, STEP.SUM)
+	else: currentExpression = []
+	evaluate()
 
-# 2+3i)/7
-# p(2 + 3 i ) / 7)
-# p(div{2 + 3 i, p(7)})
-# p(div{add{p(2), p(3 i)}, p(7)})
-# p(div{add{[2], [3i]}, [7]})
+func evaluate() -> void:
+	expressionErrored = false
+	var result:PackedInt64Array = evaluateExpression(currentExpression)
+	if !expressionErrored: valueSet.emit(result)
 
-# Sum     ← Iprod (('+' / '-') Sum)
-# Iprod   ← Product 'i'?
-# Product ← Value (('*' / '/') Product)
-# Value   ← [0-9]+ / '(' Sum ')'
+enum TOKEN {NUMBER, LBRACKET, RBRACKET, CROSS, DASH, X, SLASH, I}
+enum STEP {VALUE, PRODUCT, SUM} # symbol in the parsing expression grammar
+
+# expands back to front
+# i dont think im using this right lmao
+# Sum     ← (Sum ('+' / '-'))? Product
+# Product ← (Product ('*' / '/'))? Value
+# Value   ← '-'* ([0-9]+ / ('(' Sum ')')+) 'i'*
+
+# tokens is Array[Vector2i(TOKEN, data)]
+# data is the number index when the token is a TOKEN.NUMBER. otherwise unused
+func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expression
+	match step:
+		STEP.SUM:
+			var layer:int = 0
+			for index in range(len(tokens)-1,-1,-1):
+				var token:TOKEN = tokens[index].x as TOKEN
+				match token:
+					TOKEN.RBRACKET: layer += 1
+					TOKEN.LBRACKET: layer -= 1
+					TOKEN.CROSS, TOKEN.DASH:
+						if layer == 0:
+							if index == 0 or index == len(tokens)-1:
+								# sum error!
+								return [EXPRESSION.ERROR]
+							# sum!
+							return [
+								EXPRESSION.ADD if token == TOKEN.CROSS else EXPRESSION.SUB,
+								parseTokens(tokens.slice(0,index), STEP.SUM),
+								parseTokens(tokens.slice(index+1), STEP.PRODUCT)
+							]
+			return parseTokens(tokens, STEP.PRODUCT)
+		STEP.PRODUCT:
+			var layer:int = 0
+			for index in range(len(tokens)-1,-1,-1):
+				var token:TOKEN = tokens[index].x as TOKEN
+				match token:
+					TOKEN.RBRACKET: layer += 1
+					TOKEN.LBRACKET: layer -= 1
+					TOKEN.X, TOKEN.SLASH:
+						if layer == 0:
+							if index == 0 or index == len(tokens)-1:
+								# product error!
+								return [EXPRESSION.ERROR]
+							# product!
+							return [
+								EXPRESSION.TIMES if token == TOKEN.X else EXPRESSION.DIVIDE,
+								parseTokens(tokens.slice(0,index), STEP.PRODUCT),
+								parseTokens(tokens.slice(index+1), STEP.VALUE)
+							]
+			return parseTokens(tokens, STEP.VALUE)
+		STEP.VALUE, _:
+			var axis:PackedInt64Array = M.ONE
+			while tokens[0].x == TOKEN.DASH:
+				tokens.pop_front()
+				axis = M.negate(axis)
+			while tokens[-1].x == TOKEN.I:
+				tokens.pop_back()
+				axis = M.rotate(axis)
+			if tokens[0].x == TOKEN.LBRACKET and tokens[-1].x == TOKEN.RBRACKET:
+				tokens.pop_front()
+				tokens.pop_back()
+				if len(tokens) == 0:
+					# empty brackets error!
+					return [EXPRESSION.ERROR]
+				# check for implicit multiplication
+				var implicitMultCheck:bool = false
+				var layer:int = 0
+				for index in range(len(tokens)-1,-1,-1):
+					var token = tokens[index].x as TOKEN
+					match token:
+						TOKEN.LBRACKET:
+							layer -= 1
+							implicitMultCheck = true
+						TOKEN.RBRACKET:
+							layer += 1
+							if layer == 0 and implicitMultCheck:
+								if index == 0 or index == len(tokens) - 2:
+									# implicit multiplication error!
+									return [EXPRESSION.ERROR]
+								# implicit multiplication!
+								return [
+									EXPRESSION.TIMES,
+									parseTokens(tokens.slice(0,index), STEP.SUM),
+									parseTokens(tokens.slice(index+2), STEP.SUM)
+								]
+						_: implicitMultCheck = false
+				# bracketed sum!
+				if M.neq(axis, M.ONE):
+					return [
+						EXPRESSION.AXIS, axis,
+						parseTokens(tokens, STEP.SUM)
+					]
+				return parseTokens(tokens.slice(1,-1), STEP.SUM)
+			if len(tokens) > 1 or tokens[0].x != TOKEN.NUMBER:
+				# value error!
+				return [EXPRESSION.ERROR]
+			# value!
+			if M.neq(axis, M.ONE):
+				return [EXPRESSION.AXIS, axis, [EXPRESSION.NUMBER, tokens[0].y]]
+			return [EXPRESSION.NUMBER, tokens[0].y]
+
+enum EXPRESSION {NUMBER, AXIS, ADD, SUB, TIMES, DIVIDE, ERROR}
+# number: [EXPRESSION.NUMBER, number index]
+# axis: [EXPRESSION.AXIS, axis, expression]
+# operator: [EXPRESSION.operator, expression, expression]
+# error: [EXPRESSION.error, information]
+
+func evaluateExpression(expression:Array) -> PackedInt64Array:
+	if len(expression) == 0: return M.ZERO
+	match expression[0]:
+		EXPRESSION.NUMBER: return M.N(numberValues[expression[1]])
+		EXPRESSION.AXIS: return M.times(expression[1], evaluateExpression(expression[2]))
+		EXPRESSION.ADD: return M.add(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
+		EXPRESSION.SUB: return M.sub(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
+		EXPRESSION.TIMES: return M.times(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
+		EXPRESSION.DIVIDE: return M.divide(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
+		EXPRESSION.ERROR, _:
+			expressionErrored = true
+			return M.ZERO
 
 func buildText() -> void:
 	var formattedText:String = texts[0]
@@ -260,6 +394,7 @@ func setNumber(number:int, to:int) -> void:
 		numberStarts[shiftedNumber] += lenChange
 		numberEnds[shiftedNumber] += lenChange
 	textLen += lenChange
+	evaluate()
 
 func numberCheckSign(number:int) -> void:
 	if numberSemiNegative[number]:

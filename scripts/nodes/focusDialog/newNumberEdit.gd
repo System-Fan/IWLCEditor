@@ -87,6 +87,8 @@ func parseText() -> void:
 				"x": tokens.append(Vector2i(TOKEN.X, 0))
 				"/": tokens.append(Vector2i(TOKEN.SLASH, 0))
 				"i": tokens.append(Vector2i(TOKEN.I, 0))
+				_:
+					if symbol != " ": tokens.append(Vector2i(TOKEN.UNKNOWN, 0))
 		i += 1
 	# insert missing rbrackets at end
 	while layer > 0:
@@ -102,16 +104,19 @@ func parseText() -> void:
 func evaluate() -> void:
 	expressionErrored = false
 	var result:PackedInt64Array = evaluateExpression(currentExpression)
-	if !expressionErrored: valueSet.emit(result)
+	if !expressionErrored:
+		print(result)
+		valueSet.emit(result)
+	else: print("error!!")
 
-enum TOKEN {NUMBER, LBRACKET, RBRACKET, CROSS, DASH, X, SLASH, I}
+enum TOKEN {NUMBER, LBRACKET, RBRACKET, CROSS, DASH, X, SLASH, I, UNKNOWN}
 enum STEP {VALUE, PRODUCT, SUM} # symbol in the parsing expression grammar
 
 # expands back to front
 # i dont think im using this right lmao
 # Sum     ← (Sum ('+' / '-'))? Product
 # Product ← (Product ('*' / '/'))? Value
-# Value   ← '-'* ([0-9]+ / ('(' Sum ')')+) 'i'*
+# Value   ← ('-' / '+')* ([0-9]+ / ('(' Sum ')')+) 'i'*
 
 # tokens is Array[Vector2i(TOKEN, data)]
 # data is the number index when the token is a TOKEN.NUMBER. otherwise unused
@@ -129,6 +134,9 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 							if index == 0 or index == len(tokens)-1:
 								# sum error!
 								return [EXPRESSION.ERROR]
+							# we only absorb the leftmost one, so that unary negation can absorb the rest
+							# "1---3" -> minus("1", "--3")
+							if tokens[index-1].x in [TOKEN.CROSS, TOKEN.DASH]: continue
 							# sum!
 							return [
 								EXPRESSION.ADD if token == TOKEN.CROSS else EXPRESSION.SUB,
@@ -157,9 +165,8 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 			return parseTokens(tokens, STEP.VALUE)
 		STEP.VALUE, _:
 			var axis:PackedInt64Array = M.ONE
-			while tokens[0].x == TOKEN.DASH:
-				tokens.pop_front()
-				axis = M.negate(axis)
+			while tokens[0].x in [TOKEN.CROSS, TOKEN.DASH]:
+				if tokens.pop_front().x == TOKEN.DASH: axis = M.negate(axis)
 			while tokens[-1].x == TOKEN.I:
 				tokens.pop_back()
 				axis = M.rotate(axis)
@@ -339,7 +346,7 @@ func receiveKey(key:InputEventKey) -> bool:
 							var endNumber:int = numberEnds.find(cursorStart)
 							if endNumber != -1:
 								setNumber(endNumber, numberValues[endNumber]*10+character.to_int())
-								cursorStart = numberValues[endNumber]
+								cursorStart = numberEnds[endNumber]
 								cursorEnd = cursorStart
 								buildText()
 								return true

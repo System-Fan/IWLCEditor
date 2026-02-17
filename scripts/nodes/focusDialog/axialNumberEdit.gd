@@ -22,7 +22,8 @@ func convertNumbers(from:M.SYSTEM) -> void:
 	Changes.addChange(Changes.ConvertNumberChange.new(self, from, &"bufferedSign"))
 
 func _gui_input(event:InputEvent) -> void:
-	if Editor.isLeftClick(event): editor.focusDialog.interact(self)
+	pass
+	#if Editor.isLeftClick(event): editor.focusDialog.interact(self)
 
 func setValue(_value:PackedInt64Array, manual:bool=false) -> void:
 	value = _value

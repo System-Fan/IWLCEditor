@@ -7,11 +7,11 @@ class_name KeyDialog
 const STAR_UN_ICONS:Array[Texture2D] = [ preload("res://assets/ui/focusDialog/keySplitType/star.png"), preload("res://assets/ui/focusDialog/keySplitType/unstar.png") ]
 const CURSE_UN_ICONS:Array[Texture2D] = [ preload("res://assets/ui/focusDialog/keySplitType/curse.png"), preload("res://assets/ui/focusDialog/keySplitType/uncurse.png") ]
 
-func focus(focused:KeyBulk, _new:bool, _dontRedirect:bool) -> void:
+func focus(focused:KeyBulk, new:bool, _dontRedirect:bool) -> void:
 	%keyColorSelector.setSelect(focused.color)
 	%keyTypeSelector.setSelect(focused.type)
 	%keyCountEdit.visible = focused.type in [KeyBulk.TYPE.NORMAL,KeyBulk.TYPE.EXACT]
-	%keyCountEdit.setValue(focused.count, true)
+	%keyCountEdit.setValue(focused.count, new)
 	%keyInfiniteToggle.button_pressed = focused.infinite
 	%keyGlisteningToggle.button_pressed = focused.glistening
 	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and (focused.infinite or main.interacted == %keyPartialInfiniteEdit)
@@ -25,11 +25,10 @@ func focus(focused:KeyBulk, _new:bool, _dontRedirect:bool) -> void:
 	if focused.type == KeyBulk.TYPE.ROTOR: %keyRotorSelector.setValue(focused.count)
 	if main.interacted and !main.interacted.is_visible_in_tree(): main.deinteract()
 	if %keyCountEdit.visible:
-		if !main.interacted: main.interact(%keyCountEdit.realEdit)
+		if !main.interacted: main.interact(%keyCountEdit)
 	else: main.deinteract()
 
 func receiveKey(event:InputEventKey) -> bool:
-	return %newNumberEdit.receiveKey(event)
 	if Editor.eventIs(event, &"focusKeyNormal"): _keyTypeSelected(KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyExact"): _keyTypeSelected(KeyBulk.TYPE.EXACT if main.focused.type != KeyBulk.TYPE.EXACT else KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyStar"):

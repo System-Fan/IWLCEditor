@@ -26,15 +26,28 @@ var numberStarts:Array[int] = []
 var numberEnds:Array[int] = []
 var numberValues:Array[int] = []
 var numberSemiNegative:Array[bool] = [] # if a number is negative but like only kinda (the - is instead of a + of the number before it, not part of the number)
-var texts:Array[String] = [] # one at the start and one after each number. may be empty
+var texts:Array[String] = [""] # one at the start and one after each number. may be empty
 var currentExpression:Array = []
 var expressionErrored:bool = false
 
-func _ready() -> void:
-	parseText()
-	buildText()
+func setValue(value:PackedInt64Array, coerce:bool) -> void:
+	if coerce:
+		text = M.str(value)
+		parseText(true)
+		buildText()
 
-func parseText() -> void:
+func convertNumbers(from:M.SYSTEM) -> void:
+	pass
+	#Changes.addChange(Changes.ConvertNumberChange.new(self, from, &"value"))
+
+func interact() -> void:
+	theme_type_variation = &"NumberEditPanelContainerSelected"
+	selectAll()
+
+func deinteract() -> void:
+	theme_type_variation = &"NumberEditPanelContainer"
+
+func parseText(manual:bool=false) -> void:
 	textLen = len(text)
 	# tokenize; extract numbers
 	var i:int = 0
@@ -97,32 +110,36 @@ func parseText() -> void:
 	front.append_array(tokens)
 	tokens = front
 	# parse tokens into expression
-	if tokens: currentExpression = parseTokens(tokens, STEP.SUM)
-	else: currentExpression = []
-	evaluate()
+	currentExpression = parseTokens(tokens, STEP.SUM)
+	evaluate(manual)
 
-func evaluate() -> void:
+func evaluate(manual:bool=false) -> void:
 	expressionErrored = false
 	var result:PackedInt64Array = evaluateExpression(currentExpression)
 	if !expressionErrored:
 		print(result)
-		valueSet.emit(result)
+		if !manual: valueSet.emit(result)
 	else: print("error!!")
 
 enum TOKEN {NUMBER, LBRACKET, RBRACKET, CROSS, DASH, X, SLASH, I, UNKNOWN}
-enum STEP {VALUE, PRODUCT, SUM} # symbol in the parsing expression grammar
+enum STEP {VALUE, BRACKET, AXIS, PRODUCT, SUM} # symbol in the parsing expression grammar
 
 # expands back to front
 # i dont think im using this right lmao
 # Sum     ← (Sum ('+' / '-'))? Product
-# Product ← (Product ('*' / '/'))? Value
-# Value   ← ('-' / '+')* ([0-9]+ / ('(' Sum ')')+) 'i'*
+# Product ← (Product ('*' / '/'))? Axis
+# Axis    ← ('-' / '+')* Bracket? 'i'*
+# Bracket ← ('(' Sum ')' / Value)+
+# Value   ← [0-9]+
 
 # tokens is Array[Vector2i(TOKEN, data)]
 # data is the number index when the token is a TOKEN.NUMBER. otherwise unused
 func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expression
 	match step:
 		STEP.SUM:
+			if len(tokens) == 0:
+				# empty bracket!
+				return [EXPRESSION.CONSTANT, M.ZERO]
 			var layer:int = 0
 			for index in range(len(tokens)-1,-1,-1):
 				var token:TOKEN = tokens[index].x as TOKEN
@@ -131,8 +148,9 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 					TOKEN.LBRACKET: layer -= 1
 					TOKEN.CROSS, TOKEN.DASH:
 						if layer == 0:
-							if index == 0 or index == len(tokens)-1:
-								# sum error!
+							if index == 0: break
+							if index == len(tokens)-1:
+								print("sum error!")
 								return [EXPRESSION.ERROR]
 							# we only absorb the leftmost one, so that unary negation can absorb the rest
 							# "1---3" -> minus("1", "--3")
@@ -154,73 +172,86 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 					TOKEN.X, TOKEN.SLASH:
 						if layer == 0:
 							if index == 0 or index == len(tokens)-1:
-								# product error!
+								print("product error!")
 								return [EXPRESSION.ERROR]
 							# product!
 							return [
 								EXPRESSION.TIMES if token == TOKEN.X else EXPRESSION.DIVIDE,
 								parseTokens(tokens.slice(0,index), STEP.PRODUCT),
-								parseTokens(tokens.slice(index+1), STEP.VALUE)
+								parseTokens(tokens.slice(index+1), STEP.AXIS)
 							]
-			return parseTokens(tokens, STEP.VALUE)
-		STEP.VALUE, _:
+			return parseTokens(tokens, STEP.AXIS)
+		STEP.AXIS:
 			var axis:PackedInt64Array = M.ONE
 			while tokens[0].x in [TOKEN.CROSS, TOKEN.DASH]:
 				if tokens.pop_front().x == TOKEN.DASH: axis = M.negate(axis)
+				if len(tokens) == 0:
+					print("axis error!")
+					return [EXPRESSION.ERROR]
 			while tokens[-1].x == TOKEN.I:
 				tokens.pop_back()
 				axis = M.rotate(axis)
-			if tokens[0].x == TOKEN.LBRACKET and tokens[-1].x == TOKEN.RBRACKET:
-				tokens.pop_front()
-				tokens.pop_back()
 				if len(tokens) == 0:
-					# empty brackets error!
-					return [EXPRESSION.ERROR]
-				# check for implicit multiplication
-				var implicitMultCheck:bool = false
-				var layer:int = 0
-				for index in range(len(tokens)-1,-1,-1):
-					var token = tokens[index].x as TOKEN
-					match token:
-						TOKEN.LBRACKET:
-							layer -= 1
-							implicitMultCheck = true
-						TOKEN.RBRACKET:
-							layer += 1
-							if layer == 0 and implicitMultCheck:
-								if index == 0 or index == len(tokens) - 2:
-									# implicit multiplication error!
-									return [EXPRESSION.ERROR]
-								# implicit multiplication!
+					# multiple of i!
+					return [EXPRESSION.CONSTANT, axis]
+			# axis!
+			if M.neq(axis, M.ONE):
+				return [EXPRESSION.AXIS, axis, parseTokens(tokens, STEP.BRACKET)]
+			else: return parseTokens(tokens, STEP.BRACKET)
+		STEP.BRACKET:
+			var layer:int = 0
+			var rightBracket:int = 0
+			for index in range(len(tokens)-1,-1,-1):
+				var token:TOKEN = tokens[index].x as TOKEN
+				match token:
+					TOKEN.RBRACKET:
+						layer += 1
+						if !rightBracket:
+							rightBracket = index
+					TOKEN.LBRACKET:
+						layer -= 1
+						if layer == 0:
+							# bracket!
+							if rightBracket == len(tokens)-1: # "...(sum)"
+								if index == 0: # "(sum)"
+									return parseTokens(tokens.slice(index+1,rightBracket), STEP.SUM)
 								return [
 									EXPRESSION.TIMES,
-									parseTokens(tokens.slice(0,index), STEP.SUM),
-									parseTokens(tokens.slice(index+2), STEP.SUM)
+									parseTokens(tokens.slice(0,index), STEP.BRACKET),
+									parseTokens(tokens.slice(index+1,rightBracket), STEP.SUM)
 								]
-						_: implicitMultCheck = false
-				# bracketed sum!
-				if M.neq(axis, M.ONE):
-					return [
-						EXPRESSION.AXIS, axis,
-						parseTokens(tokens, STEP.SUM)
-					]
-				return parseTokens(tokens.slice(1,-1), STEP.SUM)
+							else: # "...(sum)value"
+								return [
+									EXPRESSION.TIMES,
+									parseTokens(tokens.slice(0,index), STEP.BRACKET),
+									[
+										EXPRESSION.TIMES,
+										parseTokens(tokens.slice(index+1,rightBracket), STEP.SUM),
+										parseTokens(tokens.slice(rightBracket+1), STEP.VALUE)
+									]
+								]
+			return parseTokens(tokens, STEP.VALUE)
+		STEP.VALUE, _:
 			if len(tokens) > 1 or tokens[0].x != TOKEN.NUMBER:
-				# value error!
+				print("value error!")
 				return [EXPRESSION.ERROR]
 			# value!
-			if M.neq(axis, M.ONE):
-				return [EXPRESSION.AXIS, axis, [EXPRESSION.NUMBER, tokens[0].y]]
 			return [EXPRESSION.NUMBER, tokens[0].y]
 
-enum EXPRESSION {NUMBER, AXIS, ADD, SUB, TIMES, DIVIDE, ERROR}
+func selectAll() -> void:
+	cursorMode = CURSOR_MODE.NORMAL
+	cursorStart = 0
+	cursorEnd = textLen
+	placeCursor()
+
+enum EXPRESSION {NUMBER, AXIS, ADD, SUB, TIMES, DIVIDE, ERROR, CONSTANT}
 # number: [EXPRESSION.NUMBER, number index]
+# constant: [EXPRESSION.CONSTANT, value]
 # axis: [EXPRESSION.AXIS, axis, expression]
 # operator: [EXPRESSION.operator, expression, expression]
 # error: [EXPRESSION.error, information]
 
 func evaluateExpression(expression:Array) -> PackedInt64Array:
-	if len(expression) == 0: return M.ZERO
 	match expression[0]:
 		EXPRESSION.NUMBER: return M.N(numberValues[expression[1]])
 		EXPRESSION.AXIS: return M.times(expression[1], evaluateExpression(expression[2]))
@@ -228,6 +259,7 @@ func evaluateExpression(expression:Array) -> PackedInt64Array:
 		EXPRESSION.SUB: return M.sub(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
 		EXPRESSION.TIMES: return M.times(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
 		EXPRESSION.DIVIDE: return M.divide(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
+		EXPRESSION.CONSTANT: return expression[1]
 		EXPRESSION.ERROR, _:
 			expressionErrored = true
 			return M.ZERO
@@ -244,6 +276,7 @@ func buildText() -> void:
 func receiveKey(key:InputEventKey) -> bool:
 	Game.editor.grab_focus()
 	match key.keycode:
+		KEY_SHIFT, KEY_CTRL, KEY_ALT, KEY_META: return false
 		KEY_RIGHT:
 			cursorMode = CURSOR_MODE.NORMAL
 			if Input.is_key_pressed(KEY_SHIFT):
@@ -303,10 +336,7 @@ func receiveKey(key:InputEventKey) -> bool:
 			placeCursor()
 		KEY_A:
 			if Input.is_key_pressed(KEY_CTRL):
-				cursorMode = CURSOR_MODE.NORMAL
-				cursorStart = 0
-				cursorEnd = textLen
-				placeCursor()
+				selectAll()
 		KEY_BACKSPACE:
 			if text == "": return true
 			match cursorMode:
@@ -352,7 +382,7 @@ func receiveKey(key:InputEventKey) -> bool:
 								return true
 							var startNumber:int = numberStarts.find(cursorStart)
 							if startNumber != -1:
-								setNumber(startNumber, character.to_int()*(10**len(numberValues[startNumber])) + numberValues[startNumber])
+								setNumber(startNumber, character.to_int()*(10**len(str(numberValues[startNumber]))) + numberValues[startNumber])
 								cursorStart += 1
 								cursorEnd = cursorStart
 								buildText()
@@ -363,9 +393,14 @@ func receiveKey(key:InputEventKey) -> bool:
 						parseText()
 						buildText()
 				CURSOR_MODE.NUMBER:
+					var character:String = char(key.unicode)
 					if Editor.eventIs(key, &"numberTimesI"): pass
 					elif Editor.eventIs(key, &"numberNegate"):
 						setNumber(cursorSelectedNumber, -numberValues[cursorSelectedNumber])
+						numberCaptureCursor(cursorStart)
+						buildText()
+					elif "0123456789".contains(character):
+						setNumber(cursorSelectedNumber, character.to_int())
 						numberCaptureCursor(cursorStart)
 						buildText()
 					else: return false

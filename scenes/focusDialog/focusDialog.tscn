@@ -239,7 +239,7 @@ toggle_mode = true
 icon = ExtResource("10_vapyv")
 metadata/explanation = SubResource("Resource_hdjws")
 
-[node name="keyCountEdit" parent="keyDialog/c/c/c" unique_id=2107257614 instance=ExtResource("5_qjvko")]
+[node name="keyCountEdit" parent="keyDialog/c/c/c" unique_id=231119399 instance=ExtResource("15_rrq8c")]
 unique_name_in_owner = true
 layout_mode = 2
 
@@ -263,10 +263,6 @@ layout_mode = 2
 size_flags_horizontal = 4
 toggle_mode = true
 icon = ExtResource("14_2wjug")
-
-[node name="newNumberEdit" parent="keyDialog/c/c/c" unique_id=231119399 instance=ExtResource("15_rrq8c")]
-unique_name_in_owner = true
-layout_mode = 2
 
 [node name="doorDialog" type="Control" parent="." unique_id=1206125138 groups=["modUI"]]
 unique_name_in_owner = true

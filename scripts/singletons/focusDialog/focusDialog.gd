@@ -13,7 +13,7 @@ class_name FocusDialog
 
 var focused:GameObject # the object that is currently focused
 var componentFocused:GameComponent # you can focus both a door and a lock at the same time so
-var interacted:PanelContainer # the number edit that is currently interacted
+var interacted:NewNumberEdit # the number edit that is currently interacted
 var activeDialog:Control
 
 var above:bool = false # display above the object instead
@@ -71,18 +71,14 @@ func defocusComponent() -> void:
 	componentFocused = null
 	deinteract()
 
-func interact(edit:PanelContainer) -> void:
+func interact(edit:NewNumberEdit) -> void:
 	deinteract()
-	edit.theme_type_variation = &"NumberEditPanelContainerNewlyInteracted"
+	edit.interact()
 	interacted = edit
-	edit.newlyInteracted = true
 
 func deinteract() -> void:
 	if !interacted: return
-	interacted.theme_type_variation = &"NumberEditPanelContainer"
-	if interacted is NumberEdit: interacted.bufferedNegative = false
-	elif interacted is AxialNumberEdit and !interacted.isZeroI: interacted.bufferedSign = M.ONE
-	interacted.setValue(interacted.value,true)
+	interacted.deinteract()
 	if activeDialog: activeDialog.editDeinteracted(interacted)
 	interacted = null
 

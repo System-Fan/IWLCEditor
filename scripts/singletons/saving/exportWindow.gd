@@ -56,23 +56,18 @@ func _export():
 	_close()
 
 func _input(event:InputEvent) -> void:
-	if event is InputEventKey and event.is_pressed() and interacted:
-		interacted.receiveKey(event)
+	if event is InputEventKey and event.is_pressed() and interacted: interacted.receiveKey(event)
 
 func tabbed(_edit:PanelContainer) -> void: pass
 
-func interact(edit:PanelContainer) -> void:
+func interact(edit:NewNumberEdit) -> void:
 	deinteract()
-	edit.theme_type_variation = &"NumberEditPanelContainerNewlyInteracted"
+	edit.interact()
 	interacted = edit
-	edit.newlyInteracted = true
 
 func deinteract() -> void:
 	if !interacted: return
-	interacted.theme_type_variation = &"NumberEditPanelContainer"
-	if interacted is NumberEdit: interacted.bufferedNegative = false
-	elif interacted is AxialNumberEdit and !interacted.isZeroI: interacted.bufferedSign = M.ONE
-	interacted.setValue(interacted.value,true)
+	interacted.deinteract()
 	interacted = null
 
 # .ROOM.GMX

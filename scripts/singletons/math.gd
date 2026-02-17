@@ -442,7 +442,9 @@ func strWithInf(n:PackedInt64Array,infAxes:PackedInt64Array) -> String:
 	if system & SYSTEM.FRACTIONS:
 		var den:int = toInt(denom(n))
 		if den == 0: return "ERROR"
-		if den != 1: iComponent += "/" + str(den)
+		if den != 1:
+			rComponent = "(" + rComponent
+			iComponent += ")/" + str(den)
 	if !rnum and !inum: return "0"
 	return rComponent + iComponent
 

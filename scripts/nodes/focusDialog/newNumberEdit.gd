@@ -281,23 +281,27 @@ func receiveKey(key:InputEventKey) -> bool:
 		KEY_RIGHT:
 			cursorMode = CURSOR_MODE.NORMAL
 			if Input.is_key_pressed(KEY_SHIFT):
-				Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", nextPointOfInterest() if Input.is_key_pressed(KEY_CTRL) else min(textLen, cursorEnd+1)))
+				if Input.is_key_pressed(KEY_CTRL): cursorEnd = nextPointOfInterest()
+				else: cursorEnd = min(textLen, cursorEnd+1)
 			else:
 				if cursorEnd > cursorStart: cursorStart = cursorEnd
 				elif cursorStart < textLen:
-					Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", nextPointOfInterest() if Input.is_key_pressed(KEY_CTRL) else cursorStart + 1))
-					Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+					if Input.is_key_pressed(KEY_CTRL): cursorStart = nextPointOfInterest()
+					else: cursorStart += 1
+					cursorEnd = cursorStart
 					numberCaptureCursor(cursorStart)
 			placeCursor()
 		KEY_LEFT:
 			cursorMode = CURSOR_MODE.NORMAL
 			if Input.is_key_pressed(KEY_SHIFT):
-				Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", previousPointOfInterest() if Input.is_key_pressed(KEY_CTRL) else max(0, cursorStart-1)))
+				if Input.is_key_pressed(KEY_CTRL): cursorStart = previousPointOfInterest()
+				else: cursorStart = max(0, cursorStart-1)
 			else:
 				if cursorEnd > cursorStart: cursorEnd = cursorStart
 				elif cursorStart > 0:
-					Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", previousPointOfInterest() if Input.is_key_pressed(KEY_CTRL) else cursorStart - 1))
-					Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+					if Input.is_key_pressed(KEY_CTRL): cursorStart = previousPointOfInterest()
+					else: cursorStart -= 1
+					cursorEnd = cursorStart
 					numberCaptureCursor(cursorStart)
 			placeCursor()
 		KEY_UP:

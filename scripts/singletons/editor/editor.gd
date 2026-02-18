@@ -80,7 +80,6 @@ var edgeResizing:bool = false
 var playerObject:GameObject = PlayerPlaceholderObject.new()
 
 func _ready() -> void:
-	Changes.editor = self
 	Mods.editor = self
 	Saving.editor = self
 	Explainer.editor = self

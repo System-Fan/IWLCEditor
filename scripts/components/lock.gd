@@ -509,7 +509,7 @@ func effectiveCount(ipow:PackedInt64Array=parent.ipow()) -> PackedInt64Array:
 func effectiveDenominator(ipow:PackedInt64Array=parent.ipow()) -> PackedInt64Array:
 	return M.times(denominator, ipow)
 
-func effectiveZeroI() -> bool: return zeroI != M.isNonzeroImag(parent.ipow())
+func effectiveZeroI() -> bool: return zeroI and M.isNonzeroReal(parent.ipow())
 
 func isNegative() -> bool:
 	if type in [TYPE.BLAST, TYPE.ALL]:

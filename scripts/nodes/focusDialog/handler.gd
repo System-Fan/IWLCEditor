@@ -1,7 +1,6 @@
 extends HFlowContainer
 class_name Handler
 
-@onready var editor:Editor = get_node("/root/editor")
 @export var buttonGroup:ButtonGroup
 
 var buttons:Array[HandlerButton] = []
@@ -73,8 +72,6 @@ func redrawButton(index:int) -> void:
 	buttons[index].queue_redraw()
 
 class HandlerButton extends Button:
-	@onready var editor:Editor = get_node("/root/editor")
-	
 	var index:int
 	var handler:Handler
 	

@@ -47,12 +47,12 @@ var nI:PackedInt64Array:
 			SYSTEM.COMPLEX: return [0,-1]
 			SYSTEM.FRACTIONS, _: return [0,-1,1]
 
-
 var ERROR:PackedInt64Array:
-	get:
+	get():
 		match system:
-			SYSTEM.COMPLEX:  assert(false); return ZERO
+			SYSTEM.COMPLEX: assert(false); return [0,0] # complex system does not have an error state
 			SYSTEM.FRACTIONS, _: return [0,0,0]
+
 # initialisers
 
 ## New number
@@ -138,28 +138,29 @@ func across(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
 ## truncates if fractions are unrepresentable
 func divide(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
 	match system:
-		@warning_ignore("integer_division") SYSTEM.COMPLEX: return [(a[0]*b[0]+a[1]*b[1])/(b[0]*b[0]+b[1]*b[1]), (a[1]*b[0]-a[0]*b[1])/(b[0]*b[0]+b[1]*b[1])]
+		SYSTEM.COMPLEX:
+			if nex(b): return ZERO
+			@warning_ignore("integer_division")
+			return [(a[0]*b[0]+a[1]*b[1])/(b[0]*b[0]+b[1]*b[1]), (a[1]*b[0]-a[0]*b[1])/(b[0]*b[0]+b[1]*b[1])]
 		SYSTEM.FRACTIONS, _: return simplify([(a[0]*b[0]+a[1]*b[1])*b[2], (a[1]*b[0]-a[0]*b[1])*b[2], (b[0]*b[0]+b[1]*b[1])*a[2]])
 
 ## (a,b -> floor(a / b))
 func floorDivide(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
 	match system:
-		SYSTEM.COMPLEX: 
-			if eq(b,ZERO): assert(false); return ZERO
-			return [intDiv(a[0]*b[0]+a[1]*b[1],b[0]*b[0]+b[1]*b[1]), intDiv(a[1]*b[0]-a[0]*b[1],b[0]*b[0]+b[1]*b[1])]
-		SYSTEM.FRACTIONS, _: 
-			if eq(b,ZERO): return ERROR
-			return M.floor(divide(a,b))
+		SYSTEM.COMPLEX: return [intDiv(a[0]*b[0]+a[1]*b[1],b[0]*b[0]+b[1]*b[1]), intDiv(a[1]*b[0]-a[0]*b[1],b[0]*b[0]+b[1]*b[1])]
+		SYSTEM.FRACTIONS, _: return M.floor(divide(a,b))
 
 ## (a,b -> a % b)
 ## has the sign of a (-5 % 3 = -2)
 func modulo(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
+	if nex(b): return ZERO
 	return sub(a,times(trunc(divide(a,b)),b))
 
 ## (a,b -> (a % b + b) % b)
 ## has the sign of b (remainder(-5, 3) = 1)
 ## also known as posmod
 func remainder(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
+	if nex(b): return ZERO
 	return sub(a,times(floorDivide(a,b),b))
 
 ## a "along" the axes of b
@@ -235,6 +236,12 @@ func inumer(n:PackedInt64Array) -> PackedInt64Array:
 		SYSTEM.COMPLEX: return [0, n[1]]
 		SYSTEM.FRACTIONS, _: return [0, n[1], 1]
 
+## (n -> ir(n)*denom(n))
+func irnumer(n:PackedInt64Array) -> PackedInt64Array:
+	match system:
+		SYSTEM.COMPLEX: return [n[1], 0]
+		SYSTEM.FRACTIONS, _: return [n[1], 0, 1]
+
 ## (n -> r(n)*denom(n))
 func numer(n:PackedInt64Array) -> PackedInt64Array:
 	match system:
@@ -285,6 +292,8 @@ func cabs(n:PackedInt64Array) -> PackedInt64Array:
 
 ## the axes present in the number, ignoring sign
 func axibs(n:PackedInt64Array) -> PackedInt64Array: return cabs(axis(n))
+## the axes present in the number, or 1 if zero, ignoring sign
+func saxibs(n:PackedInt64Array) -> PackedInt64Array: return cabs(saxis(n))
 
 ## truncates number
 func trunc(n:PackedInt64Array) -> PackedInt64Array:
@@ -390,6 +399,15 @@ func isNonzeroImag(n:PackedInt64Array) -> bool:
 func isNonzeroAxial(n:PackedInt64Array) -> bool:
 	return bool(n[0]) != bool(n[1])
 
+func isReal(n:PackedInt64Array) -> bool:
+	return !n[1]
+
+func isImag(n:PackedInt64Array) -> bool:
+	return !n[0]
+
+func isAxial(n:PackedInt64Array) -> bool:
+	return !(n[0] && n[1])
+
 func isComplex(n:PackedInt64Array) -> bool:
 	return n[0] and n[1]
 
@@ -440,18 +458,14 @@ func toIpow(n:PackedInt64Array) -> int:
 func toInt(n:PackedInt64Array) -> int:
 	return n[0]
 
-# so apparently thats wrong
-func imaginaryPartToInt(n:PackedInt64Array) -> int:
-	return n[1]
-
 func str(n:PackedInt64Array) -> String:
 	return strWithInf(n,ZERO)
 
 func strWithInf(n:PackedInt64Array,infAxes:PackedInt64Array) -> String:
 	var rComponent:String
 	var iComponent:String = ""
-	var rnum = toInt(n)
-	var inum = imaginaryPartToInt(n)
+	var rnum = toInt(rnumer(n))
+	var inum = toInt(irnumer(n))
 	if infAxes[0]: rComponent = "-~" if rnum < 0 else "~"
 	elif rnum: rComponent = str(rnum)
 	if inum:
@@ -460,8 +474,12 @@ func strWithInf(n:PackedInt64Array,infAxes:PackedInt64Array) -> String:
 		else: iComponent += str(inum) + "i"
 	if system & SYSTEM.FRACTIONS:
 		var den:int = toInt(denom(n))
-		if den == 0 or n == ERROR: return "ERROR"
-		if den != 1: iComponent += "/" + str(den)
+		if den == 0: return "ERROR"
+		if den != 1:
+			if isComplex(n):
+				rComponent = "(" + rComponent
+				iComponent += ")"
+			iComponent += "/" + str(den)
 	if !rnum and !inum: return "0"
 	return rComponent + iComponent
 

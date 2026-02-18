@@ -23,6 +23,7 @@ func _ready() -> void:
 			Lock.TYPE.BLANK: explanation = ControlExplanation.new("[%s]Set blank lock type", [&"focusLockBlank"])
 			Lock.TYPE.BLAST: explanation = ControlExplanation.new("[%s]Set blast lock type", [&"focusLockBlast"])
 			Lock.TYPE.ALL: explanation = ControlExplanation.new("[%s]Set all lock type", [&"focusLockAll"])
+			Lock.TYPE.EXACT: explanation = ControlExplanation.new("[%s]Set exact lock type", [&"focusLockExact"])
 			Lock.TYPE.GLISTENING: explanation = ControlExplanation.new("[%s]Set glistening lock type", [&"focusLockGlistening"])
 		Explainer.addControl(button,explanation)
 

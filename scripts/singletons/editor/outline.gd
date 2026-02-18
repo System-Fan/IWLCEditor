@@ -1,8 +1,6 @@
 extends Node2D
 class_name Outline
 
-@onready var editor:Editor = get_node("/root/editor")
-
 var drawNormal:RID
 
 # see outlineViewport.gd for how this works
@@ -13,14 +11,14 @@ func _ready() -> void:
 func draw() -> void:
 	RenderingServer.canvas_item_clear(drawNormal)
 	if Game.playState == Game.PLAY_STATE.PLAY: return
-	if editor.settingsOpen:
-		if editor.settingsMenu.levelSettings.visible: drawOutline(editor.levelBoundsObject,Color.GREEN)
+	if Game.editor.settingsOpen:
+		if Game.editor.settingsMenu.levelSettings.visible: drawOutline(Game.editor.levelBoundsObject,Color.GREEN)
 	else: 
-		if editor.focusDialog.focused: drawOutline(editor.focusDialog.focused,Color.GREEN)
-		if editor.focusDialog.componentFocused: drawOutline(editor.focusDialog.componentFocused,Color.RED)
-		if editor.multiselect.state == Multiselect.STATE.HOLDING:
-			if editor.objectHovered and editor.objectHovered != editor.focusDialog.focused: drawOutline(editor.objectHovered,Color("#0f08"))
-			if editor.componentHovered and editor.componentHovered != editor.focusDialog.componentFocused: drawOutline(editor.componentHovered,Color("#f008"))
+		if Game.editor.focusDialog.focused: drawOutline(Game.editor.focusDialog.focused,Color("#0f0a"))
+		if Game.editor.focusDialog.componentFocused: drawOutline(Game.editor.focusDialog.componentFocused,Color.RED)
+		if Game.editor.multiselect.state == Multiselect.STATE.HOLDING:
+			if Game.editor.objectHovered and Game.editor.objectHovered != Game.editor.focusDialog.focused: drawOutline(Game.editor.objectHovered,Color("#0f06"))
+			if Game.editor.componentHovered and Game.editor.componentHovered != Game.editor.focusDialog.componentFocused: drawOutline(Game.editor.componentHovered,Color("#f008"))
 
 func drawOutline(component:GameComponent,color:Color) -> void:
 	var pos:Vector2 = component.getDrawPosition()

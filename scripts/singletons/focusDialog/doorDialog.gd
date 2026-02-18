@@ -1,7 +1,6 @@
 extends Control
 class_name DoorDialog
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var main:FocusDialog = get_parent()
 
 @onready var lockHandler:LockHandler = %lockHandler
@@ -27,17 +26,17 @@ func focus(focused:GameObject, new:bool, dontRedirect:bool) -> void: # Door or R
 			%doorAuraSettings.visible = focused.type != Door.TYPE.GATE
 			%doorCopySettings.visible = focused.type != Door.TYPE.GATE
 			%doorColorSelector.setSelect(focused.colorSpend)
-			%doorCopiesEdit.setValue(focused.copies, true)
 			%spend.button_pressed = true
 			%blastLockSettings.visible = false
 		if main.interacted and !main.interacted.is_visible_in_tree(): main.deinteract()
 		if %doorCopySettings.visible:
-			if !main.interacted: main.interact(%doorCopiesEdit.realEdit)
+			if !main.interacted: main.interact(%doorCopiesEdit)
 		elif %doorAxialNumberEdit.visible:
 			if !main.interacted: main.interact(%doorAxialNumberEdit)
 		else: main.deinteract()
 		if new:
 			%lockHandler.setup(focused)
+			%doorCopiesEdit.setValue(focused.copies)
 			if focused.type == Door.TYPE.SIMPLE and !dontRedirect: main.focusComponent(focused.locks[0])
 	elif focused is RemoteLock:
 		%door.visible = false
@@ -47,7 +46,7 @@ func focus(focused:GameObject, new:bool, dontRedirect:bool) -> void: # Door or R
 		%doorsHandler.setup(focused)
 		focusComponent(focused, new)
 
-func focusComponent(component:GameComponent, _new:bool) -> void: # Lock or RemoteLock
+func focusComponent(component:GameComponent, new:bool) -> void: # Lock or RemoteLock
 	%doorColorSelector.visible = true
 	%doorColorSelector.setSelect(component.color)
 	if component is Lock: %lockHandler.setSelect(component.index)
@@ -60,8 +59,8 @@ func focusComponent(component:GameComponent, _new:bool) -> void: # Lock or Remot
 	%remoteLockConvert.visible = Mods.active(&"C1") and component is not RemoteLock
 
 	%doorAxialNumberEdit.visible = component.type == Lock.TYPE.NORMAL or component.type == Lock.TYPE.EXACT or component.type == Lock.TYPE.GLISTENING
-	%doorAxialNumberEdit.zeroIValid = component.type == Lock.TYPE.EXACT
-	%doorAxialNumberEdit.setValue(component.count, true)
+	%doorAxialNumberEdit.allowZeroI = component.type == Lock.TYPE.EXACT
+	if new: %doorAxialNumberEdit.setValue(component.count)
 	if component.zeroI: %doorAxialNumberEdit.setZeroI()
 
 	%doorCopySettings.visible = false
@@ -76,8 +75,9 @@ func focusComponent(component:GameComponent, _new:bool) -> void: # Lock or Remot
 	%isPartial.button_pressed = component.isPartial
 	%partialDenominator.visible = component.isPartial
 	%discreteBlastSettings.visible = !component.isPartial and (component.type != Lock.TYPE.ALL or Mods.active(&"C3"))
-	%partialBlastNumeratorEdit.setValue(component.count, true)
-	%partialBlastDenominatorEdit.setValue(component.denominator, true)
+	if new:
+		%partialBlastNumeratorEdit.setValue(component.count)
+		%partialBlastDenominatorEdit.setValue(component.denominator)
 
 	if component is Lock: %lockHandler.redrawButton(component.index)
 	%lockNegated.button_pressed = component.negated
@@ -86,19 +86,10 @@ func focusComponent(component:GameComponent, _new:bool) -> void: # Lock or Remot
 	if %doorAxialNumberEdit.visible:
 		if !main.interacted: main.interact(%doorAxialNumberEdit)
 	elif %partialBlastSettings.visible:
-		if !main.interacted: main.interact(%partialBlastNumeratorEdit.realEdit)
+		if !main.interacted: main.interact(%partialBlastNumeratorEdit)
 	else: main.deinteract()
 
 func receiveKey(event:InputEvent) -> bool:
-	match event.keycode:
-		KEY_TAB:
-			assert(main.componentFocused) # should be handled by interact otherwise
-			if Input.is_key_pressed(KEY_SHIFT):
-				if main.componentFocused.index == 0: main.interactDoorLastEdit()
-				else: main.interactLockLastEdit(main.componentFocused.index-1)
-			else:
-				if main.componentFocused.index == len(main.componentFocused.parent.locks)-1: main.interactDoorFirstEdit()
-				else: main.interactLockFirstEdit(main.componentFocused.index+1)
 	var blastSettings:bool = !main.interacted and main.componentFocused and main.componentFocused.type == Lock.TYPE.BLAST
 	if Editor.eventIs(event, &"numberNegate"):
 		if blastSettings: _blastLockSignSet(!%blastLockSign.button_pressed)
@@ -119,19 +110,19 @@ func receiveKey(event:InputEvent) -> bool:
 			elif Editor.eventIs(event, &"focusDoorFrozen"): _frozenSet(!main.focused.frozen)
 			elif Editor.eventIs(event, &"focusDoorCrumbled"): _crumbledSet(!main.focused.crumbled)
 			elif Editor.eventIs(event, &"focusDoorPainted"): _paintedSet(!main.focused.painted)
-			elif Editor.eventIs(event, &"quicksetColor"): editor.quickSet.startQuick(&"quicksetColor", main.focused)
+			elif Editor.eventIs(event, &"quicksetColor"): Game.editor.quickSet.startQuick(&"quicksetColor", main.focused)
 			else: return false
 		else:
 			if Editor.eventIs(event, &"focusLockDuplicate", true): main.focused.duplicateLock(main.componentFocused)
 			elif Editor.eventIs(event, &"focusLockConvertRemote") and Mods.active(&"C1"): _remoteLockConvert()
 			elif Editor.eventIs(event, &"focusDoorAddLock", true): main.focused.addLock()
 			elif Editor.eventIs(event, &"focusDoorColorLink"): %colorLink.button_pressed = !%colorLink.button_pressed
-			elif Editor.eventIs(event, &"quicksetLockSize"): editor.quickSet.startQuick(&"quicksetLockSize", main.componentFocused)
+			elif Editor.eventIs(event, &"quicksetLockSize"): Game.editor.quickSet.startQuick(&"quicksetLockSize", main.componentFocused)
 			elif Editor.eventIs(event, &"editDelete"):
 				main.focused.removeLock(main.componentFocused.index)
 				if len(main.focused.locks) != 0: main.focusComponent(main.focused.locks[-1])
 				else: main.focus(main.focused)
-			elif Editor.eventIs(event, &"quicksetColor"): editor.quickSet.startQuick(&"quicksetColor", main.componentFocused)
+			elif Editor.eventIs(event, &"quicksetColor"): Game.editor.quickSet.startQuick(&"quicksetColor", main.componentFocused)
 			else: return false
 	else:
 		if Editor.eventIs(event, &"focusDoorFrozen"): _frozenSet(!main.focused.frozen)
@@ -139,7 +130,7 @@ func receiveKey(event:InputEvent) -> bool:
 		elif Editor.eventIs(event, &"focusDoorPainted"): _paintedSet(!main.focused.painted)
 		elif Editor.eventIs(event, &"focusDoorAddLock", true): main.focused.addLock()
 		elif Editor.eventIs(event, &"focusDoorColorLink"): %colorLink.button_pressed = !%colorLink.button_pressed
-		elif Editor.eventIs(event, &"quicksetColor"): editor.quickSet.startQuick(&"quicksetColor", main.focused)
+		elif Editor.eventIs(event, &"quicksetColor"): Game.editor.quickSet.startQuick(&"quicksetColor", main.focused)
 		else: return false
 	return true
 
@@ -152,8 +143,6 @@ func changedMods() -> void:
 	%imaginaryInfiniteCopy.visible = Mods.active(&"InfCopies")
 	if main.componentFocused is Lock and main.componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL]:
 		main.focusComponent(main.componentFocused)
-
-func editDeinteracted(_edit) -> void: pass
 
 func _doorColorSelected(color:Game.COLOR) -> void:
 	if main.focused is not Door and main.focused is not RemoteLock: return
@@ -239,13 +228,13 @@ func _lockNegatedSet(value:bool) -> void:
 	Changes.addChange(Changes.PropertyChange.new(lock,&"negated",value))
 	Changes.bufferSave()
 
-func partialBlastNumeratorSet(value:PackedInt64Array) -> void:
+func _partialBlastNumeratorSet(value:PackedInt64Array) -> void:
 	if main.componentFocused is not Lock and main.focused is not RemoteLock: return
 	var lock:GameComponent = main.componentFocused if main.componentFocused is Lock else main.focused
 	Changes.addChange(Changes.PropertyChange.new(lock,&"count",value))
 	Changes.bufferSave()
 
-func partialBlastDenominatorSet(value:PackedInt64Array) -> void:
+func _partialBlastDenominatorSet(value:PackedInt64Array) -> void:
 	if main.componentFocused is not Lock and main.focused is not RemoteLock: return
 	var lock:GameComponent = main.componentFocused if main.componentFocused is Lock else main.focused
 	Changes.addChange(Changes.PropertyChange.new(lock,&"denominator",value))

@@ -149,6 +149,18 @@ border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5vlxa"]
+content_margin_left = 2.0
+content_margin_top = 2.0
+content_margin_right = 2.0
+content_margin_bottom = 2.0
+bg_color = Color(0.17163703, 0.17163706, 0.17163697, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0, 0.4, 1)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jqlop"]
 content_margin_left = 1.0
 content_margin_top = 0.0
@@ -162,10 +174,10 @@ border_width_bottom = 2
 border_color = Color(0, 0.51479346, 0.9935469, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8jef3"]
-content_margin_left = 1.0
-content_margin_top = 0.0
+content_margin_left = 2.0
+content_margin_top = 2.0
 content_margin_right = 2.0
-content_margin_bottom = 1.0
+content_margin_bottom = 2.0
 bg_color = Color(0.17163703, 0.17163706, 0.17163697, 1)
 border_width_left = 2
 border_width_top = 2
@@ -384,6 +396,8 @@ MultiselectPanel/base_type = &"Panel"
 MultiselectPanel/styles/panel = SubResource("StyleBoxFlat_ffcy4")
 NumberEditPanelContainer/base_type = &"PanelContainer"
 NumberEditPanelContainer/styles/panel = SubResource("StyleBoxFlat_kty0u")
+NumberEditPanelContainerError/base_type = &"PanelContainer"
+NumberEditPanelContainerError/styles/panel = SubResource("StyleBoxFlat_5vlxa")
 NumberEditPanelContainerNewlyInteracted/base_type = &"PanelContainer"
 NumberEditPanelContainerNewlyInteracted/styles/panel = SubResource("StyleBoxFlat_jqlop")
 NumberEditPanelContainerSelected/base_type = &"PanelContainer"

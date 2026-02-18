@@ -2,8 +2,6 @@ extends HBoxContainer
 class_name ConfigurationSelector
 # selector for lock size and configuration; manages lock sizing
 
-@onready var editor:Editor = get_node("/root/editor")
-
 const SPECIFIC_A:Texture2D = preload("res://assets/ui/focusDialog/lockConfiguration/SpecificA.png")
 const SPECIFIC_B:Texture2D = preload("res://assets/ui/focusDialog/lockConfiguration/SpecificB.png")
 const SPECIFIC_H:Texture2D = preload("res://assets/ui/focusDialog/lockConfiguration/SpecificH.png")
@@ -95,12 +93,10 @@ func setup(lock:GameComponent) -> void: # Lock or RemoteLock
 			Lock.SIZE_TYPE.ANY: setSelect(OPTION.ANY)
 
 func changedMods() -> void:
-	if editor.focusDialog.componentFocused is Lock: setup(editor.focusDialog.componentFocused)
-	elif editor.focusDialog.focused is RemoteLock: setup(editor.focusDialog.focused)
+	if Game.editor.focusDialog.componentFocused is Lock: setup(Game.editor.focusDialog.componentFocused)
+	elif Game.editor.focusDialog.focused is RemoteLock: setup(Game.editor.focusDialog.focused)
 
 class ConfigurationSelectorButton extends Button:
-	@onready var editor:Editor = get_node("/root/editor")
-
 	var option:OPTION
 	var selector:ConfigurationSelector
 

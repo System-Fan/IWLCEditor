@@ -1,7 +1,6 @@
 extends Control
 class_name PlayerDialog
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var main:FocusDialog = get_parent()
 
 var color:Game.COLOR
@@ -20,35 +19,36 @@ func focus(focused:GameObject, new:bool, _dontRedirect:bool) -> void:
 		if Game.levelStart == focused: %levelStart.button_pressed = true
 		else: %savestate.button_pressed = true
 	if %playerStateSettings.visible:
-		if !main.interacted: main.interact(%playerKeyCountEdit.realEdit)
+		if !main.interacted: main.interact(%playerKeyCountEdit)
 
 func setSelectedColor(toColor:Game.COLOR) -> void:
 	%playerColorSelector.setSelect(toColor)
 	_playerColorSelected(toColor)
 
 func _playerColorSelected(_color:Game.COLOR) -> void:
+	var new:bool = color != _color
 	color = _color
 	if main.focused is PlayerPlaceholderObject:
-		%playerKeyCountEdit.setValue(Game.player.key[color], true)
+		if new:
+			%playerKeyCountEdit.setValue(Game.player.key[color])
+			%playerKeyGlistenEdit.setValue(Game.player.glisten[color])
 		%playerStar.button_pressed = Game.player.star[color]
 		%playerCurse.button_pressed = Game.player.curse[color]
-		%playerKeyGlistenEdit.setValue(Game.player.glisten[color], true)
 	else:
-		%playerKeyCountEdit.setValue(main.focused.key[color], true)
+		if new:
+			%playerKeyCountEdit.setValue(main.focused.key[color])
+			%playerKeyGlistenEdit.setValue(main.focused.glisten[color])
 		%playerStar.button_pressed = main.focused.star[color]
 		%playerCurse.button_pressed = main.focused.curse[color]
-		%playerKeyGlistenEdit.setValue(main.focused.glisten[color], true)
 
 func receiveKey(event:InputEvent) -> bool:
 	if Editor.eventIs(event, &"focusPlayerStart") and %playerSpawnSettings.visible: _playTest()
 	elif Editor.eventIs(event, &"focusPlayerStar") and %playerStateSettings.visible: _playerStarSet(!%playerStar.button_pressed)
 	elif Editor.eventIs(event, &"focusPlayerCurse") and %playerStateSettings.visible and %playerCurse.visible: _playerCurseSet(!%playerCurse.button_pressed)
 	elif Editor.eventIs(event, &"focusPlayerSavestate") and %playerSettings.visible: _leaveSavestate()
-	elif Editor.eventIs(event, &"quicksetColor") and %playerStateSettings.visible: editor.quickSet.startQuick(&"quicksetColor", main.focused)
+	elif Editor.eventIs(event, &"quicksetColor") and %playerStateSettings.visible: Game.editor.quickSet.startQuick(&"quicksetColor", main.focused)
 	else: return false
 	return true
-
-func editDeinteracted(_edit) -> void: pass
 
 func changedMods() -> void:
 	%playerCurse.visible = Mods.active(&"C5")

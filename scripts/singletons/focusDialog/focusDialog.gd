@@ -1,7 +1,6 @@
 extends Control
 class_name FocusDialog
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var colorLink:Button = %colorLink
 
 @onready var keyDialog:KeyDialog = %keyDialog
@@ -13,8 +12,11 @@ class_name FocusDialog
 
 var focused:GameObject # the object that is currently focused
 var componentFocused:GameComponent # you can focus both a door and a lock at the same time so
-var interacted:PanelContainer # the number edit that is currently interacted
 var activeDialog:Control
+var bufferFocus:bool = false
+
+var interacted:NumberEdit # the number edit that is currently interacted
+var numberEdits:Array[NumberEdit] = []
 
 var above:bool = false # display above the object instead
 
@@ -48,12 +50,13 @@ func showCorrectDialog() -> void:
 func defocus() -> void:
 	if !focused: return
 	var object:GameObject = focused
-	editor.quickSet.applyOrCancel()
+	Game.editor.quickSet.applyOrCancel()
 	if object is Door and !Mods.active(&"ZeroCopies") and M.nex(object.copies): Changes.addChange(Changes.PropertyChange.new(object,&"copies",M.ONE))
 	focused = null
 	if object is RemoteLock: object.queue_redraw()
 	deinteract()
 	defocusComponent()
+	bufferFocus = false
 
 func focusComponent(component:GameComponent) -> void:
 	if !component:
@@ -70,108 +73,74 @@ func defocusComponent() -> void:
 	if componentFocused is Lock and !Mods.active(&"ZeroCostLock") and !(Mods.active(&"C3") and componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL, Lock.TYPE.EXACT]) and M.nex(componentFocused.count): Changes.addChange(Changes.PropertyChange.new(componentFocused,&"count",M.ONE))
 	componentFocused = null
 	deinteract()
+	bufferFocus = false
 
-func interact(edit:PanelContainer) -> void:
+func interact(edit:NumberEdit, last:bool=false) -> void:
 	deinteract()
-	edit.theme_type_variation = &"NumberEditPanelContainerNewlyInteracted"
+	edit.interact(last)
 	interacted = edit
-	edit.newlyInteracted = true
 
 func deinteract() -> void:
 	if !interacted: return
-	interacted.theme_type_variation = &"NumberEditPanelContainer"
-	if interacted is NumberEdit: interacted.bufferedNegative = false
-	elif interacted is AxialNumberEdit and !interacted.isZeroI: interacted.bufferedSign = M.ONE
-	interacted.setValue(interacted.value,true)
-	if activeDialog: activeDialog.editDeinteracted(interacted)
+	interacted.deinteract()
 	interacted = null
 
-func interactDoorFirstEdit() -> void:
-	defocusComponent()
-	focus(focused)
-
-func interactDoorLastEdit() -> void:
-	defocusComponent()
-	focus(focused)
-	interact(%doorCopiesEdit.imaginaryEdit)
-
-func interactLockFirstEdit(index:int) -> void:
-	focusComponent(focused.locks[index])
-
-func interactLockLastEdit(index:int) -> void:
-	focusComponent(focused.locks[index])
-	if componentFocused.type in [Lock.TYPE.NORMAL, Lock.TYPE.EXACT]: interact(%doorAxialNumberEdit)
-	elif componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL]:
-		if componentFocused.isPartial: interact(%partialBlastDenominatorEdit.imaginaryEdit)
-		else: interact(%partialBlastNumeratorEdit.imaginaryEdit)
-	else: deinteract()
-
-func tabbed(numberEdit:PanelContainer) -> void:
-	editor.grab_focus()
-	if Input.is_key_pressed(KEY_SHIFT):
-		match numberEdit.purpose:
-			NumberEdit.PURPOSE.IMAGINARY: interact(numberEdit.get_parent().realEdit)
-			NumberEdit.PURPOSE.REAL:
-				if focused is KeyBulk:
-					interact(%keyCountEdit.imaginaryEdit)
-				elif focused is Door:
-					if numberEdit == %doorCopiesEdit.realEdit:
-						if len(focused.locks) > 0: interactLockLastEdit(-1)
-						else: interactDoorLastEdit()
-					elif numberEdit == %partialBlastDenominatorEdit.realEdit:
-						interact(%partialBlastNumeratorEdit.imaginaryEdit)
-					elif numberEdit == %partialBlastNumeratorEdit.realEdit:
-						if componentFocused.index == 0: interactDoorLastEdit()
-						else: interactLockLastEdit(componentFocused.index-1)
-				elif focused.get_script() in [PlayerPlaceholderObject, PlayerSpawn]:
-					if numberEdit == %playerKeyCountEdit.realEdit:
-						playerDialog.setSelectedColor(Mods.previousColor(playerDialog.color))
-						interact(%playerKeyGlistenEdit.imaginaryEdit if Mods.active(&"Glistening") else %playerKeyCountEdit.imaginaryEdit)
-					if numberEdit == %playerKeyGlistenEdit.realEdit: interact(%playerKeyCountEdit.imaginaryEdit)
-			NumberEdit.PURPOSE.AXIAL:
-				assert(componentFocused)
-				if componentFocused.index == 0: interactDoorLastEdit()
-				else: interactLockLastEdit(componentFocused.index-1)
-	else:
-		match numberEdit.purpose:
-			NumberEdit.PURPOSE.REAL:
-				interact(numberEdit.get_parent().imaginaryEdit)
-			NumberEdit.PURPOSE.IMAGINARY:
-				if focused is KeyBulk:
-					interact(%keyCountEdit.realEdit)
-				elif focused is Door:
-					if numberEdit == %doorCopiesEdit.imaginaryEdit:
-						if len(focused.locks) > 0: interactLockFirstEdit(0)
-						else: interactDoorFirstEdit()
-					elif numberEdit == %partialBlastNumeratorEdit.imaginaryEdit and componentFocused.isPartial:
-						interact(%partialBlastDenominatorEdit.realEdit)
-					elif numberEdit in [%partialBlastNumeratorEdit.imaginaryEdit, %partialBlastDenominatorEdit.imaginaryEdit]:
-						if componentFocused.index == len(focused.locks) - 1: interactDoorFirstEdit()
-						else: interactLockFirstEdit(componentFocused.index+1)
-				elif focused.get_script() in [PlayerPlaceholderObject, PlayerSpawn]:
-					if numberEdit == (%playerKeyGlistenEdit.imaginaryEdit if Mods.active(&"Glistening") else %playerKeyCountEdit.imaginaryEdit):
-						playerDialog.setSelectedColor(Mods.nextColor(playerDialog.color))
-						interact(%playerKeyCountEdit.realEdit)
-					if Mods.active(&"Glistening") and numberEdit == %playerKeyCountEdit.imaginaryEdit: interact(%playerKeyGlistenEdit.realEdit)
-			NumberEdit.PURPOSE.AXIAL:
-				assert(componentFocused)
-				if componentFocused.index == len(focused.locks) - 1: interactDoorFirstEdit()
-				else: interactLockFirstEdit(componentFocused.index+1)
-
-func receiveKey(event:InputEvent) -> bool:
+func receiveKey(event:InputEventKey) -> bool:
 	if activeDialog and activeDialog.receiveKey(event): return true
 	else:
 		if Editor.eventIs(event, &"editDelete"):
 			Changes.addChange(Changes.DeleteComponentChange.new(focused))
 			Changes.bufferSave()
+		elif event.keycode == KEY_TAB:
+			Game.editor.grab_focus()
+			if interacted: 
+				var index:int = numberEdits.find(interacted)
+				if Input.is_key_pressed(KEY_SHIFT):
+					index -= 1
+					while !numberEdits[index].is_visible_in_tree():
+						if index == -1: previousMenu()
+						index -= 1
+					interact(numberEdits[index], true)
+				else:
+					index += 1
+					while !numberEdits[index].is_visible_in_tree():
+						if index == len(numberEdits)-1:
+							nextMenu(); index = 0
+						else: index += 1
+					interact(numberEdits[index])
+			else: bufferFocus = true
 		else: return false
 	return true
+
+func previousMenu() -> void:
+	match activeDialog:
+		doorDialog:
+			if componentFocused:
+				if componentFocused.index > 0: focusComponent(focused.locks[componentFocused.index-1])
+				else: doorDialog._spendSelected()
+			else: focusComponent(focused.locks[-1])
+		playerDialog:
+			playerDialog.setSelectedColor(Mods.previousColor(playerDialog.color))
+
+func nextMenu() -> void:
+	match activeDialog:
+		doorDialog:
+			if componentFocused:
+				if componentFocused.index == len(focused.locks) - 1: doorDialog._spendSelected()
+				else: focusComponent(focused.locks[componentFocused.index+1])
+			else: focusComponent(focused.locks[0])
+		playerDialog:
+			playerDialog.setSelectedColor(Mods.nextColor(playerDialog.color))
 
 const EDGE_MARGIN:float = 4
 const OBJECT_MARGIN:float = 16 # between the dialog and the object; where the speech bubbler goes
 const SPEECH_BUBBLER_MARGIN:float = 10 # between speech bubbler and edge of dialog
 
 func _process(_delta:float) -> void:
+	if bufferFocus:
+		if componentFocused: focusComponent(componentFocused)
+		elif focused: focus(focused)
+		bufferFocus = false
 	if focused and activeDialog:
 		visible = true
 		# position the dialog every frame (could be optimised but i dont care)
@@ -180,12 +149,12 @@ func _process(_delta:float) -> void:
 		var halfWidth:float = activeDialog.get_child(0).size.x/2
 		activeDialog.get_child(0).position = Vector2(-halfWidth,0)
 		var height:float = activeDialog.get_child(0).size.y
-		position = editor.worldspaceToScreenspace(focused.getDrawPosition() + Vector2(focused.size.x/2,focused.size.y)) + Vector2(0,OBJECT_MARGIN)
+		position = Game.editor.worldspaceToScreenspace(focused.getDrawPosition() + Vector2(focused.size.x/2,focused.size.y)) + Vector2(0,OBJECT_MARGIN)
 		
-		if above and position.y - height - 2*OBJECT_MARGIN - focused.size.y*editor.cameraZoom < editor.gameCont.position.y + EDGE_MARGIN: flip = true
-		elif !above and position.y + height > editor.gameCont.position.y + editor.gameCont.size.y - EDGE_MARGIN: flip = true
+		if above and position.y - height - 2*OBJECT_MARGIN - focused.size.y*Game.editor.cameraZoom < Game.editor.gameCont.position.y + EDGE_MARGIN: flip = true
+		elif !above and position.y + height > Game.editor.gameCont.position.y + Game.editor.gameCont.size.y - EDGE_MARGIN: flip = true
 
-		if above != flip: position = editor.worldspaceToScreenspace(focused.getDrawPosition() + Vector2(focused.size.x/2,0)) + Vector2(0,-OBJECT_MARGIN)
+		if above != flip: position = Game.editor.worldspaceToScreenspace(focused.getDrawPosition() + Vector2(focused.size.x/2,0)) + Vector2(0,-OBJECT_MARGIN)
 		%speechBubbler.rotation_degrees = 0 if above != flip else 180
 		if flip != above: activeDialog.get_child(0).position.y = -height
 		else: activeDialog.get_child(0).position.y = 0
@@ -196,12 +165,12 @@ func _process(_delta:float) -> void:
 		if position.x < halfWidth + EDGE_MARGIN:
 			%speechBubbler.position.x = max(position.x-halfWidth-EDGE_MARGIN,SPEECH_BUBBLER_MARGIN-speechBubblerRange)
 			position.x = halfWidth + EDGE_MARGIN
-		if position.x + halfWidth + EDGE_MARGIN > editor.gameCont.size.x:
-			%speechBubbler.position.x = min(position.x+halfWidth-editor.gameCont.size.x+EDGE_MARGIN,speechBubblerRange-SPEECH_BUBBLER_MARGIN)
-			position.x = editor.gameCont.size.x - halfWidth - EDGE_MARGIN
+		if position.x + halfWidth + EDGE_MARGIN > Game.editor.gameCont.size.x:
+			%speechBubbler.position.x = min(position.x+halfWidth-Game.editor.gameCont.size.x+EDGE_MARGIN,speechBubblerRange-SPEECH_BUBBLER_MARGIN)
+			position.x = Game.editor.gameCont.size.x - halfWidth - EDGE_MARGIN
 		
-		if above != flip: position.y = min(position.y, editor.gameCont.position.y + editor.gameCont.size.y - SPEECH_BUBBLER_MARGIN)
-		else: position.y = max(position.y, editor.gameCont.position.y + SPEECH_BUBBLER_MARGIN)
+		if above != flip: position.y = min(position.y, Game.editor.gameCont.position.y + Game.editor.gameCont.size.y - SPEECH_BUBBLER_MARGIN)
+		else: position.y = max(position.y, Game.editor.gameCont.position.y + SPEECH_BUBBLER_MARGIN)
 	else:
 		visible = false
 

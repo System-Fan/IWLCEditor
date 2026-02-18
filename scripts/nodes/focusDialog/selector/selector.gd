@@ -2,8 +2,6 @@
 extends GridContainer
 class_name Selector # configurationSelector is not a selector
 
-@onready var editor:Editor = get_node("/root/editor") if has_node("/root/editor") else null
-
 var defaultValue:Variant
 var buttonType:GDScript = SelectorButton
 
@@ -41,8 +39,6 @@ func _select(button:SelectorButton) -> void:
 func redrawButtons() -> void: for button in buttons: button.queue_redraw()
 
 class SelectorButton extends Button:
-	@onready var editor:Editor = get_node("/root/editor") if has_node("/root/editor") else null
-
 	var value:Variant
 	var selector:Selector
 

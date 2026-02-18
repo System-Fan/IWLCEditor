@@ -1,25 +1,25 @@
 extends Control
 class_name KeyDialog
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var main:FocusDialog = get_parent()
 
 const STAR_UN_ICONS:Array[Texture2D] = [ preload("res://assets/ui/focusDialog/keySplitType/star.png"), preload("res://assets/ui/focusDialog/keySplitType/unstar.png") ]
 const CURSE_UN_ICONS:Array[Texture2D] = [ preload("res://assets/ui/focusDialog/keySplitType/curse.png"), preload("res://assets/ui/focusDialog/keySplitType/uncurse.png") ]
 
-func focus(focused:KeyBulk, _new:bool, _dontRedirect:bool) -> void:
+func focus(focused:KeyBulk, new:bool, _dontRedirect:bool) -> void:
 	%keyColorSelector.setSelect(focused.color)
 	%keyAltColorSelector.setSelect(focused.altColor)
 	%keyAltColorSelector.visible = focused.type == KeyBulk.TYPE.OPERATOR
 	%keyTypeSelector.setSelect(focused.type)
 	%keyCountEdit.visible = focused.type in [KeyBulk.TYPE.NORMAL,KeyBulk.TYPE.EXACT]
-	%keyCountEdit.setValue(focused.count, true)
+	if new: %keyCountEdit.setValue(focused.count)
 	%keyInfiniteToggle.button_pressed = focused.infinite
 	%keyGlisteningToggle.button_pressed = focused.glistening
+	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and focused.infinite
+	if new: %keyPartialInfiniteEdit.setValue(M.N(focused.infinite))
 	%keyOperationSelector.visible = focused.type == KeyBulk.TYPE.OPERATOR
 	%keyOperationSelector.setSelect(focused.operation)
 	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and (focused.infinite or main.interacted == %keyPartialInfiniteEdit)
-	%keyPartialInfiniteEdit.setValue(M.N(focused.infinite), true)
 	%keyRotorSelector.visible = focused.type == KeyBulk.TYPE.ROTOR
 	%keyUn.visible = focused.type in [KeyBulk.TYPE.STAR, KeyBulk.TYPE.CURSE]
 	%keyUn.button_pressed = !focused.un
@@ -29,7 +29,7 @@ func focus(focused:KeyBulk, _new:bool, _dontRedirect:bool) -> void:
 	if focused.type == KeyBulk.TYPE.ROTOR: %keyRotorSelector.setValue(focused.count)
 	if main.interacted and !main.interacted.is_visible_in_tree(): main.deinteract()
 	if %keyCountEdit.visible:
-		if !main.interacted: main.interact(%keyCountEdit.realEdit)
+		if !main.interacted: main.interact(%keyCountEdit)
 	else: main.deinteract()
 
 func receiveKey(event:InputEventKey) -> bool:
@@ -59,13 +59,9 @@ func receiveKey(event:InputEventKey) -> bool:
 	elif Editor.eventIs(event, &"focusKeyOperator"): _keyTypeSelected(KeyBulk.TYPE.OPERATOR if main.focused.type != KeyBulk.TYPE.OPERATOR else KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyInfinite"): _keyInfiniteToggled(0 if main.focused.infinite else 1)
 	elif Editor.eventIs(event, &"focusKeyGlistening"): _keyGlisteningToggled(!main.focused.glistening)
-	elif Editor.eventIs(event, &"quicksetColor"): editor.quickSet.startQuick(&"quicksetColor", main.focused)
+	elif Editor.eventIs(event, &"quicksetColor"): Game.editor.quickSet.startQuick(&"quicksetColor", main.focused)
 	else: return false
 	return true
-
-func editDeinteracted(edit:PanelContainer) -> void:
-	if main.focused is not KeyBulk: return
-	if edit == %keyPartialInfiniteEdit and !main.focused.infinite: %keyPartialInfinite.visible = false
 
 func changedMods() -> void:
 	%keyGlisteningToggle.visible = Mods.active(&"Glistening")

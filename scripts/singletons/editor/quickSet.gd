@@ -1,8 +1,6 @@
 extends RichTextLabel
 class_name QuickSet
 
-@onready var editor:Editor = get_node("/root/editor")
-
 var component:GameComponent
 var quickType:StringName
 var input:String = ""
@@ -35,13 +33,13 @@ func applyOrCancel() -> void:
 			var found:int = findInputIn(ColorQuicksetSetting.matches)
 			if found in Mods.colors():
 				match component.get_script():
-					KeyBulk: editor.focusDialog.keyDialog._keyColorSelected(found)
-					Door, Lock, RemoteLock: editor.focusDialog.doorDialog._doorColorSelected(found)
-					PlayerSpawn, PlayerPlaceholderObject: editor.focusDialog.playerDialog.setSelectedColor(found)
-					KeyCounterElement: editor.focusDialog.keyCounterDialog._keyCounterColorSelected(found)
+					KeyBulk: Game.editor.focusDialog.keyDialog._keyColorSelected(found)
+					Door, Lock, RemoteLock: Game.editor.focusDialog.doorDialog._doorColorSelected(found)
+					PlayerSpawn, PlayerPlaceholderObject: Game.editor.focusDialog.playerDialog.setSelectedColor(found)
+					KeyCounterElement: Game.editor.focusDialog.keyCounterDialog._keyCounterColorSelected(found)
 		&"quicksetLockSize":
 			var found:int = findInputIn(LockSizeQuicksetSetting.matches)
-			if found != -1: editor.focusDialog.doorDialog._lockConfigurationSelected(found)
+			if found != -1: Game.editor.focusDialog.doorDialog._lockConfigurationSelected(found)
 	visible = false
 	%explainText.visible = true
 	quickType = &""

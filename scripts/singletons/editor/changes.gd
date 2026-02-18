@@ -1,7 +1,5 @@
 extends Node
 
-var editor:Editor
-
 var undoStack:Array[RefCounted] = [UndoSeparator.new()]
 var stackPosition:int = 0
 
@@ -28,7 +26,7 @@ func _process(_delta) -> void:
 		stackPosition += 1
 
 func undo() -> void:
-	if editor.componentDragged: editor.stopDrag()
+	if Game.editor.componentDragged: Game.editor.stopDrag()
 	if stackPosition == 0: return
 	Game.anyChanges = true
 	if undoStack[stackPosition] is UndoSeparator: stackPosition -= 1
@@ -334,8 +332,7 @@ class PropertyChange extends Change:
 		else: component.set(property, value)
 		component.propertyChangedDo(property)
 		component.queue_redraw()
-		if Game.editor.focusDialog.focused == component: Game.editor.focusDialog.focus(component)
-		elif Game.editor.focusDialog.componentFocused == component: Game.editor.focusDialog.focusComponent(component)
+		if Game.editor.focusDialog.focused == component or Game.editor.focusDialog.componentFocused == component: Game.editor.focusDialog.bufferFocus = true
 		if Game.editor.findProblems: Game.editor.findProblems.findProblems(component)
 	
 	func _to_string() -> String:
@@ -692,3 +689,52 @@ class ConvertNumberArrayChange extends Change:
 	
 	func _to_string() -> String:
 		return "<ConvertNumberArrayChange:"+str(before)+","+str(from)+">"
+
+class NumberEditNumberChange extends Change:
+	var numberEdit:NumberEdit
+	var number:int
+	var array:StringName
+	var before:Variant
+	var after:Variant
+
+	## you still need to build the text manually afterwards
+	func _init(_numberEdit:NumberEdit, _number:int, _array:StringName, _after:Variant) -> void:
+		numberEdit = _numberEdit
+		number = _number
+		array = _array
+		before = numberEdit.get(array)[number]
+		after = _after
+		do(false)
+	
+	func do(build:bool=true) -> void:
+		numberEdit.get(array)[number] = after
+		if build: numberEdit.buildText()
+	
+	func undo() -> void:
+		numberEdit.get(array)[number] = before
+		numberEdit.buildText()
+
+## more expensive than a number change, since we have to parse the text
+class NumberEditTextChange extends Change:
+	var numberEdit:NumberEdit
+	var before:String
+	var after:String
+
+	## dont parse if this is immediately followed by another text change
+	func _init(_numberEdit:NumberEdit, _after:String, parse:bool=true) -> void:
+		numberEdit = _numberEdit
+		before = numberEdit.text
+		after = _after
+		do(parse)
+		if parse: numberEdit.evaluate()
+	
+	func do(parse:bool=true) -> void:
+		numberEdit.text = after
+		if parse:
+			numberEdit.parseText(true)
+			numberEdit.buildText()
+	
+	func undo() -> void:
+		numberEdit.text = before
+		numberEdit.parseText(true)
+		numberEdit.buildText()

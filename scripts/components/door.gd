@@ -217,34 +217,38 @@ static func drawDoor(doorDrawScaled:RID,doorDrawAuraBreaker:RID,doorDrawGlitch:R
 		else: RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,FRAME,CORNER_SIZE,CORNER_SIZE)
 
 static func drawAuras(objectDrawCrumbled:RID,objectDrawPainted:RID,objectDrawFrozen:RID,objectFrozen:bool,objectCrumbled:bool,objectPainted:bool,rect:Rect2) -> void:
+	var variableSize:bool = false
 	if objectCrumbled:
-		RenderingServer.canvas_item_set_material(objectDrawCrumbled,CRUMBLED_MATERIAL.get_rid())
-		RenderingServer.canvas_item_set_instance_shader_parameter(objectDrawCrumbled, &"size", Vector2(0,0))
 		if rect.size == Vector2(32,32): RenderingServer.canvas_item_add_texture_rect(objectDrawCrumbled,rect,CRUMBLED_1X1)
 		elif rect.size == Vector2(32,64): RenderingServer.canvas_item_add_texture_rect(objectDrawCrumbled,rect,CRUMBLED_1X2)
 		elif rect.size == Vector2(64,64): RenderingServer.canvas_item_add_texture_rect(objectDrawCrumbled,rect,CRUMBLED_2X2)
-		else:
+		else: variableSize = true
+		if variableSize:
+			RenderingServer.canvas_item_set_material(objectDrawCrumbled,CRUMBLED_MATERIAL.get_rid())
 			RenderingServer.canvas_item_set_instance_shader_parameter(objectDrawCrumbled, &"size", rect.size)
 			RenderingServer.canvas_item_add_rect(objectDrawCrumbled,rect,Color.WHITE)
+		else: RenderingServer.canvas_item_set_material(objectDrawCrumbled,Game.NO_MATERIAL.get_rid())
 	if objectPainted:
-		RenderingServer.canvas_item_set_material(objectDrawPainted,PAINTED_MATERIAL.get_rid())
-		RenderingServer.canvas_item_set_instance_shader_parameter(objectDrawPainted, &"scale", Vector2(0,0))
 		if rect.size == Vector2(32,32): RenderingServer.canvas_item_add_texture_rect(objectDrawPainted,rect,PAINTED_1X1)
 		elif rect.size == Vector2(32,64): RenderingServer.canvas_item_add_texture_rect(objectDrawPainted,rect,PAINTED_1X2)
 		elif rect.size == Vector2(64,64): RenderingServer.canvas_item_add_texture_rect(objectDrawPainted,rect,PAINTED_2X2)
-		else:
+		else: variableSize = true
+		if variableSize:
+			RenderingServer.canvas_item_set_material(objectDrawPainted,PAINTED_MATERIAL.get_rid())
 			RenderingServer.canvas_item_set_instance_shader_parameter(objectDrawPainted, &"scale", rect.size/128)
 			RenderingServer.canvas_item_add_texture_rect(objectDrawPainted,rect,PAINTED_BASE,true)
+		else: RenderingServer.canvas_item_set_material(objectDrawPainted,Game.ADDITIVE_MATERIAL.get_rid())
 	if objectFrozen:
-		RenderingServer.canvas_item_set_material(objectDrawFrozen,FROZEN_MATERIAL.get_rid())
-		RenderingServer.canvas_item_set_instance_shader_parameter(objectDrawFrozen, &"size", Vector2(0,0))
 		if rect.size == Vector2(32,32): RenderingServer.canvas_item_add_texture_rect(objectDrawFrozen,rect,FROZEN_1X1)
 		elif rect.size == Vector2(32,64): RenderingServer.canvas_item_add_texture_rect(objectDrawFrozen,rect,FROZEN_1X2)
 		elif rect.size == Vector2(64,64): RenderingServer.canvas_item_add_texture_rect(objectDrawFrozen,rect,FROZEN_2X2)
 		elif rect.size == Vector2(96,64): RenderingServer.canvas_item_add_texture_rect(objectDrawFrozen,rect,FROZEN_3X2)
-		else:
+		else: variableSize = true
+		if variableSize:
+			RenderingServer.canvas_item_set_material(objectDrawFrozen,FROZEN_MATERIAL.get_rid())
 			RenderingServer.canvas_item_set_instance_shader_parameter(objectDrawFrozen, &"size", rect.size)
 			RenderingServer.canvas_item_add_rect(objectDrawFrozen,rect,Color.WHITE)
+		else: RenderingServer.canvas_item_set_material(objectDrawFrozen,Game.NO_MATERIAL.get_rid())
 
 func receiveMouseInput(event:InputEventMouse) -> bool:
 	# resizing

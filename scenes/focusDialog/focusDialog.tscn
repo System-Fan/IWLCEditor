@@ -843,6 +843,7 @@ default_color = Color(0.8352941, 0.8352941, 0.8352941, 1)
 [connection signal="toggled" from="doorDialog/c/lock/c/c/doorAuraSettings/crumbled" to="doorDialog" method="_crumbledSet"]
 [connection signal="toggled" from="doorDialog/c/lock/c/c/doorAuraSettings/painted" to="doorDialog" method="_paintedSet"]
 [connection signal="toggled" from="doorDialog/c/lock/c/c/doorCopySettings/realInfiniteCopy" to="doorDialog" method="_doorRealInfiniteSet"]
+[connection signal="valueSet" from="doorDialog/c/lock/c/c/doorCopySettings/doorCopiesEdit" to="doorDialog" method="_doorCopiesSet"]
 [connection signal="toggled" from="doorDialog/c/lock/c/c/doorCopySettings/imaginaryInfiniteCopy" to="doorDialog" method="_doorImaginaryInfiniteSet"]
 [connection signal="valueSet" from="doorDialog/c/lock/c/c/doorAxialNumberEdit" to="doorDialog" method="_doorAxialNumberSet"]
 [connection signal="valueSet" from="doorDialog/c/lock/c/c/blastLockSettings/partialBlastSettings/partialBlastNumeratorEdit" to="doorDialog" method="_partialBlastNumeratorSet"]

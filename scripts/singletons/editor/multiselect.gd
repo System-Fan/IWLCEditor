@@ -148,12 +148,10 @@ func redrawClipboard() -> void:
 
 class Select extends RefCounted:
 	# a link to a single thing, selected
-	var Game.editor:Editor
 	var position:Vector2
 	var size:Vector2
 
 	func _init(_position:Vector2) -> void:
-		Game.editor = Game.Game.editor
 		position = _position
 	
 	func startDrag() -> void: pass
@@ -223,7 +221,7 @@ class ObjectSelect extends Select:
 
 @abstract class Copy extends RefCounted:
 	# a copy of a single thing
-	var Game.editor:Editor
+	pass
 
 class TileCopy extends Copy: # definitely rethink this at some point
 	var position:Vector2
@@ -241,7 +239,6 @@ class ObjectCopy extends Copy:
 	var type:GDScript
 
 	func _init(object:GameObject) -> void:
-		Game.editor = Game.Game.editor
 		type = object.get_script()
 
 		for property in object.PROPERTIES:
@@ -280,7 +277,6 @@ class LockCopy extends Copy:
 	var properties:Dictionary[StringName, Variant]
 
 	func _init(lock:Lock) -> void:
-		Game.editor = Game.Game.editor
 		for property in Lock.PROPERTIES:
 			properties[property] = lock.get(property)
 
@@ -312,7 +308,6 @@ class KeyCounterElementCopy extends Copy:
 	var properties:Dictionary[StringName, Variant]
 
 	func _init(element:KeyCounterElement) -> void:
-		Game.editor = Game.Game.editor
 		for property in KeyCounterElement.PROPERTIES:
 			properties[property] = element.get(property)
 

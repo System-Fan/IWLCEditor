@@ -856,6 +856,8 @@ default_color = Color(0.8352941, 0.8352941, 0.8352941, 1)
 [connection signal="pressed" from="playerDialog/c/c/c/c/playerSpawnSettings/c/savestate" to="playerDialog" method="_setSavestate"]
 [connection signal="pressed" from="playerDialog/c/c/c/c/playerSettings/leaveSavestate" to="playerDialog" method="_leaveSavestate"]
 [connection signal="select" from="playerDialog/c/c/c/c/playerStateSettings/playerColorSelector" to="playerDialog" method="_playerColorSelected"]
+[connection signal="valueSet" from="playerDialog/c/playerStateColorSettings/c/c/playerKeyCountEdit" to="playerDialog" method="_playerKeyCountSet"]
+[connection signal="valueSet" from="playerDialog/c/playerStateColorSettings/c/c/playerKeyGlistenCont/playerKeyGlistenEdit" to="playerDialog" method="_playerKeyGlistenSet"]
 [connection signal="toggled" from="playerDialog/c/playerStateColorSettings/c/c/colorSettings/playerStar" to="playerDialog" method="_playerStarSet"]
 [connection signal="toggled" from="playerDialog/c/playerStateColorSettings/c/c/colorSettings/playerCurse" to="playerDialog" method="_playerCurseSet"]
 [connection signal="select" from="keyCounterDialog/c/c/c/keyCounterWidthSelector" to="keyCounterDialog" method="_keyCounterWidthSelected"]

@@ -77,7 +77,7 @@ static func loadFile(file:FileAccess, formatVersion:int) -> void:
 		ARRAYS.get(PlayerSpawn)[&"glisten"] = TYPE_PACKED_INT64_ARRAY
 	# format version 3 is v1.1.0
 	if formatVersion > 2:
-		PROPERTIES.get(KeyBulk).append(&"operation")
+		PROPERTIES.get(KeyBulk).append_array([&"altColor", &"operation"])
 	# LEVEL DATA
 	# tiles
 	Game.tiles.tile_map_data = file.get_var()

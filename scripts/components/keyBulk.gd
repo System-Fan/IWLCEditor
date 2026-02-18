@@ -92,7 +92,12 @@ func _ready() -> void:
 	RenderingServer.canvas_item_set_parent(drawSymbol,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawAdditionalGlitch,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawAdditional,get_canvas_item())
-	Game.connect(&"goldIndexChanged",func():if color in Game.ANIMATED_COLORS: queue_redraw())
+	Game.connect(&"goldIndexChanged",func():if hasAnimatedColor(): queue_redraw())
+
+func hasAnimatedColor() -> bool:
+	if color in Game.ANIMATED_COLORS: return true
+	if type == TYPE.OPERATOR and altColor in Game.ANIMATED_COLORS: return true
+	return false
 
 func _freed() -> void:
 	RenderingServer.free_rid(drawDropShadow)
@@ -130,7 +135,7 @@ func _draw() -> void:
 	RenderingServer.canvas_item_clear(drawAdditional)
 	if !active and Game.playState == Game.PLAY_STATE.PLAY: return
 	var rect:Rect2 = Rect2(Vector2.ZERO, size)
-	RenderingServer.canvas_item_add_texture_rect(drawDropShadow,Rect2(Vector2(3,3),size),getOutlineTexture(color,type,un),false,Game.DROP_SHADOW_COLOR)
+	RenderingServer.canvas_item_add_texture_rect(drawDropShadow,Rect2(Vector2(3,3),size),getOutlineTexture(color,type,un,operation),false,Game.DROP_SHADOW_COLOR)
 	drawKey(drawGlitch,drawMain,Vector2.ZERO,color,type,un,glitchMimic,partialInfiniteAlpha)
 	if animState == ANIM_STATE.FLASH: RenderingServer.canvas_item_add_texture_rect(drawSymbol,rect,outlineTex(),false,Color(Color.WHITE,animAlpha))
 	match type:

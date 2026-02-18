@@ -249,6 +249,7 @@ func stop() -> void:
 func collect(player:Player) -> void:
 	if partialInfiniteCount: return
 	var collectColor:Game.COLOR = effectiveColor(color)
+	var collectAltColor:Game.COLOR = effectiveColor(altColor) # for operator
 
 	if glistening:
 		match type:
@@ -257,6 +258,14 @@ func collect(player:Player) -> void:
 			TYPE.ROTOR:
 				if reciprocal: player.changeGlisten(collectColor, M.divide(count,player.glisten[collectColor]))
 				else: player.changeGlisten(collectColor, M.times(player.glisten[collectColor], count))
+			TYPE.OPERATOR:
+				match mode:
+					OPERATION.SET: player.changeGlisten(collectColor, player.glisten[collectAltColor])
+					OPERATION.ADD: player.changeGlisten(collectColor, M.add(player.glisten[collectColor], player.glisten[collectAltColor]))
+					OPERATION.SUBTRACT: player.changeGlisten(collectColor, M.sub(player.glisten[collectColor], player.glisten[collectAltColor]))
+					OPERATION.MULTIPLY: player.changeGlisten(collectColor, M.times(player.glisten[collectColor], player.glisten[collectAltColor]))
+					OPERATION.DIVIDE: player.changeGlisten(collectColor, M.divide(player.glisten[collectColor], player.glisten[collectAltColor]))
+					OPERATION.MODULO: player.changeGlisten(collectColor, M.remainder(player.glisten[collectColor], player.glisten[collectAltColor]))
 
 	match type:
 		TYPE.NORMAL: player.changeKeys(collectColor, M.add(player.key[collectColor], count))
@@ -264,16 +273,16 @@ func collect(player:Player) -> void:
 		TYPE.ROTOR:
 			if reciprocal: player.changeKeys(collectColor, M.divide(count,player.key[collectColor]))
 			else: player.changeKeys(collectColor, M.times(player.key[collectColor], count))
-		TYPE.STAR: GameChanges.addChange(GameChanges.StarChange.new(effectiveColor(color), !un))
-		TYPE.CURSE: GameChanges.addChange(GameChanges.CurseChange.new(effectiveColor(color), !un))
+		TYPE.STAR: GameChanges.addChange(GameChanges.StarChange.new(collectColor, !un))
+		TYPE.CURSE: GameChanges.addChange(GameChanges.CurseChange.new(collectColor, !un))
 		TYPE.OPERATOR:
 			match mode:
-				OPERATION.SET: player.changeKeys(collectColor, player.key[effectiveColor(altColor)])
-				OPERATION.ADD: player.changeKeys(collectColor, M.add(player.key[collectColor], player.key[effectiveColor(altColor)]))
-				OPERATION.SUBTRACT: player.changeKeys(collectColor, M.sub(player.key[collectColor], player.key[effectiveColor(altColor)]))
-				OPERATION.MULTIPLY: player.changeKeys(collectColor, M.times(player.key[collectColor], player.key[effectiveColor(altColor)]))
-				OPERATION.DIVIDE: player.changeKeys(collectColor, M.divide(player.key[collectColor], player.key[effectiveColor(altColor)]))
-				OPERATION.MODULO: player.changeKeys(collectColor, M.remainder(player.key[collectColor], player.key[effectiveColor(altColor)]))
+				OPERATION.SET: player.changeKeys(collectColor, player.key[collectAltColor])
+				OPERATION.ADD: player.changeKeys(collectColor, M.add(player.key[collectColor], player.key[collectAltColor]))
+				OPERATION.SUBTRACT: player.changeKeys(collectColor, M.sub(player.key[collectColor], player.key[collectAltColor]))
+				OPERATION.MULTIPLY: player.changeKeys(collectColor, M.times(player.key[collectColor], player.key[collectAltColor]))
+				OPERATION.DIVIDE: player.changeKeys(collectColor, M.divide(player.key[collectColor], player.key[collectAltColor]))
+				OPERATION.MODULO: player.changeKeys(collectColor, M.remainder(player.key[collectColor], player.key[collectAltColor]))
 	
 	if infinite:
 		flashAnimation()

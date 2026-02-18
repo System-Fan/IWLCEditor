@@ -9,6 +9,7 @@ enum TYPE {NORMAL, EXACT, STAR, ROTOR, CURSE, OPERATOR}
 
 const OPERATIONS:int = 6
 enum OPERATION {SET, ADD, SUBTRACT, MULTIPLY, DIVIDE, MODULO}
+const OPERATION_NAMES:Array[String] = ["Set", "Add", "Subtract", "Multiply", "Divide", "Modulo"]
 
 # colors that use textures
 const TEXTURE_COLORS:Array[Game.COLOR] = [Game.COLOR.MASTER, Game.COLOR.PURE, Game.COLOR.STONE, Game.COLOR.DYNAMITE, Game.COLOR.QUICKSILVER, Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI]

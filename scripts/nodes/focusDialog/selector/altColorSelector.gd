@@ -1,0 +1,3 @@
+extends ColorSelector
+
+class_name AltColorSelector

@@ -6,7 +6,8 @@ const ICONS:Array[Texture2D] = [
 	preload("res://assets/ui/focusDialog/keyType/exact.png"),
 	preload("res://assets/ui/focusDialog/keyType/star.png"),
 	preload("res://assets/ui/focusDialog/keyType/rotor.png"),
-	preload("res://assets/ui/focusDialog/keyType/curse.png")
+	preload("res://assets/ui/focusDialog/keyType/curse.png"),
+	preload("res://assets/ui/focusDialog/keyType/operator.png"),
 ]
 
 func _ready() -> void:
@@ -23,6 +24,7 @@ func _ready() -> void:
 			KeyBulk.TYPE.STAR: explanation = ControlExplanation.new("[%s]Toggle star key type", [&"focusKeyStar"])
 			KeyBulk.TYPE.ROTOR: explanation = ControlExplanation.new("[%s]Advance rotor key type", [&"focusKeyRotor"])
 			KeyBulk.TYPE.CURSE: explanation = ControlExplanation.new("[%s]Toggle curse key type", [&"focusKeyCurse"])
+			KeyBulk.TYPE.OPERATOR: explanation = ControlExplanation.new("[%s]Toggle operation key type", [&"focusKeyOperator"])
 		Explainer.addControl(button,explanation)
 
 func changedMods() -> void:

@@ -72,7 +72,7 @@ VBoxContainer/constants/separation = 2
 
 [sub_resource type="ButtonGroup" id="ButtonGroup_3e3b5"]
 
-[node name="settingsMenu" type="PanelContainer" unique_id=1534647259]
+[node name="settingsMenu" type="PanelContainer" unique_id=1534647259 groups=["modUI"]]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -710,16 +710,71 @@ label = "Toggle Curse Type"
 action = &"focusKeyCurse"
 prerequisite = &"C5"
 
+[node name="focusKeyOperator" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c" unique_id=427433704 instance=ExtResource("6_dkncv")]
+layout_mode = 2
+label = "Set Operator Type"
+action = &"focusKeyOperator"
+prerequisite = &"OperatorKey"
+
 [node name="focusKeyInfinite" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c" unique_id=116495567 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Toggle Infinite"
 action = &"focusKeyInfinite"
 
-[node name="focusKeyGlistening" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c" unique_id=427433704 instance=ExtResource("6_dkncv")]
+[node name="focusKeyGlistening" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c" unique_id=1204843461 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Toggle Glistening"
 action = &"focusKeyGlistening"
 prerequisite = &"Glistening"
+
+[node name="l" type="Label" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c" unique_id=1213878551]
+layout_mode = 2
+text = "Operator Key Focused"
+label_settings = SubResource("LabelSettings_tyaol")
+vertical_alignment = 2
+
+[node name="operatorKeyFocused" type="MarginContainer" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c" unique_id=261197991]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="c" type="VBoxContainer" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused" unique_id=1228710426]
+layout_mode = 2
+
+[node name="focusKeyOperationSet" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=117124281 instance=ExtResource("6_dkncv")]
+layout_mode = 2
+label = "Set Set Operation"
+action = &"focusKeyOperationSet"
+prerequisite = &"OperatorKey"
+
+[node name="focusKeyOperationAdd" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=2059242794 instance=ExtResource("6_dkncv")]
+layout_mode = 2
+label = "Set Add Operation"
+action = &"focusKeyOperationAdd"
+prerequisite = &"OperatorKey"
+
+[node name="focusKeyOperationSubtract" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=164499111 instance=ExtResource("6_dkncv")]
+layout_mode = 2
+label = "Set Subtract Operation"
+action = &"focusKeyOperationSubtract"
+prerequisite = &"OperatorKey"
+
+[node name="focusKeyOperationMultiply" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=1863308533 instance=ExtResource("6_dkncv")]
+layout_mode = 2
+label = "Set Multiply Operation"
+action = &"focusKeyOperationMultiply"
+prerequisite = &"OperatorKey"
+
+[node name="focusKeyOperationDivide" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=2032659825 instance=ExtResource("6_dkncv")]
+layout_mode = 2
+label = "Set Divide Operation"
+action = &"focusKeyOperationDivide"
+prerequisite = &"OperatorKey"
+
+[node name="focusKeyOperationModulo" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=1128080105 instance=ExtResource("6_dkncv")]
+layout_mode = 2
+label = "Set Modulo Operation"
+action = &"focusKeyOperationModulo"
+prerequisite = &"OperatorKey"
 
 [node name="l2" type="Label" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c" unique_id=372084689]
 layout_mode = 2
@@ -891,6 +946,7 @@ tooltip_text = "Relevant hotkeys from \"Editing Door Properties\" and \"Editing 
 texture = ExtResource("5_iswfj")
 
 [node name="remoteLockFocused" type="MarginContainer" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c" unique_id=581252308]
+unique_name_in_owner = true
 layout_mode = 2
 
 [node name="c" type="VBoxContainer" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/remoteLockFocused" unique_id=912741936]
@@ -900,6 +956,7 @@ layout_mode = 2
 layout_mode = 2
 label = "Add Connection"
 action = &"focusRemoteLockAddConnection"
+prerequisite = &"C1"
 
 [node name="l5" type="Label" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c" unique_id=1574871636]
 layout_mode = 2

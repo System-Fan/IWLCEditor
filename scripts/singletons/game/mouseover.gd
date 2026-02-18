@@ -20,10 +20,21 @@ func describe(object:GameObject, pos:Vector2, screenBottomRight:Vector2) -> void
 					elif M.eq(object.count, M.nI): string += "Rotor (-i) "
 					if object.reciprocal: string += "Reciprocal "
 				KeyBulk.TYPE.CURSE: string += "Uncurse " if object.un else "Curse "
+				KeyBulk.TYPE.OPERATOR: string += "Operator "
 			string += Game.COLOR_NAMES[object.color] + " Key"
 			if object.type in [KeyBulk.TYPE.NORMAL, KeyBulk.TYPE.EXACT]:
 				string += "\nAmount: " + M.str(object.count)
-			if object.color == Game.COLOR.GLITCH: string += "\nMimic: " + Game.COLOR_NAMES[object.glitchMimic]
+			if object.type == KeyBulk.TYPE.OPERATOR:
+				string += "\n"
+				match object.mode:
+					KeyBulk.OPERATION.SET: string += "Action: Set to "
+					KeyBulk.OPERATION.ADD: string += "Action: Add "
+					KeyBulk.OPERATION.SUBTRACT: string += "Action: Subtract "
+					KeyBulk.OPERATION.MULTIPLY: string += "Action: Multiply by "
+					KeyBulk.OPERATION.DIVIDE: string += "Action: Divide by "
+					KeyBulk.OPERATION.MODULO: string += "Action: Modulo "
+				string += Game.COLOR_NAMES[object.altColor]
+			if object.color == Game.COLOR.GLITCH or object.altColor == Game.COLOR.GLITCH: string += "\nMimic: " + Game.COLOR_NAMES[object.glitchMimic]
 			if object.glistening:
 				string += "\n- Effects -\nGlistening!"
 		Door:

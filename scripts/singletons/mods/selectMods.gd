@@ -7,7 +7,7 @@ class_name SelectMods
 
 # the way the select tree is laid out
 static var ModTree:Array = [
-	&"PartialInfKey", &"Glistening",
+	&"PartialInfKey", &"Glistening", &"OperatorKey",
 	SubTree.new(
 		"Benign",
 		"Mods that don't do much.",
@@ -54,7 +54,7 @@ func setup() -> void:
 	updateModpacks()
 	updateVersions()
 	updateMods()
-	setInfoModpack(modsWindow.tempActiveModpack)
+	setInfoModpack(modsWindow.tempActiveModpack, modsWindow.tempActiveVersion)
 
 func updateModpacks() -> void:
 	%modpacks.clear()
@@ -73,8 +73,11 @@ func updateVersions() -> void:
 	if modsWindow.tempActiveModpack:
 		%versionsLabel.visible = true
 		%versions.visible = true
+		var index:int = 0
 		for version in modsWindow.tempActiveModpack.versions:
 			%versions.add_item(version.name)
+			if version == modsWindow.tempActiveVersion: %versions.select(index)
+			index += 1
 	else:
 		%versionsLabel.visible = false
 		%versions.visible = false
@@ -116,14 +119,23 @@ func _modpackSelected(index:int, manual:bool=false) -> void:
 	else:
 		if modsWindow.tempActiveModpack == Mods.modpacks[Mods.modpacks.keys()[index]]: return
 		modsWindow.tempActiveModpack = Mods.modpacks.values()[index]
-		modsWindow.tempActiveVersion = modsWindow.tempActiveModpack.versions[0]
+		modsWindow.tempActiveVersion = modsWindow.tempActiveModpack.versions[modsWindow.tempActiveModpack.defaultVersion]
 	updateModpacks()
 	updateVersions()
 	if index != -1 and !manual:
 		for modId in Mods.mods.keys():
 			if !Mods.mods[modId].disclosatory: addChange(ModChange.new(self, modId, modId in modsWindow.tempActiveVersion.mods))
 	if !manual:
-		setInfoModpack(modsWindow.tempActiveModpack)
+		setInfoModpack(modsWindow.tempActiveModpack, modsWindow.tempActiveVersion)
+		bufferSave()
+
+func _versionSelected(index:int, manual:bool=false) -> void:
+	if modsWindow.tempActiveVersion == modsWindow.tempActiveModpack.versions[index]: return
+	modsWindow.tempActiveVersion = modsWindow.tempActiveModpack.versions[index]
+	if !manual:
+		for modId in Mods.mods.keys():
+			if !Mods.mods[modId].disclosatory: addChange(ModChange.new(self, modId, modId in modsWindow.tempActiveVersion.mods))
+		setInfoModpack(modsWindow.tempActiveModpack, modsWindow.tempActiveVersion)
 		bufferSave()
 
 func _treeItemHovered(item:Control) -> void:
@@ -148,7 +160,7 @@ func _treeItemHovered(item:Control) -> void:
 func _treeItemUnhovered(item:Control) -> void:
 	if item != hoveredItem: return
 	hoveredItem = null
-	setInfoModpack(modsWindow.tempActiveModpack)
+	setInfoModpack(modsWindow.tempActiveModpack, modsWindow.tempActiveVersion)
 
 func _modChanged(mod:StringName, toggled_on:bool) -> void:
 	if addChange(ModChange.new(self, mod, toggled_on)):
@@ -169,7 +181,7 @@ func findModpack() -> void:
 		modpackIndex += 1
 	_modpackSelected(-1, true)
 
-func setInfoModpack(modpack:Mods.Modpack) -> void:
+func setInfoModpack(modpack:Mods.Modpack,version:Mods.Version) -> void:
 	if !modpack:
 		%info.visible = false
 		%noModpackInfo.visible = true
@@ -183,8 +195,8 @@ func setInfoModpack(modpack:Mods.Modpack) -> void:
 		%infoDescription.text = modpack.description
 
 		%versionInfo.visible = true
-		%version.text = "Version: [color=#00a2ff][url=" + modsWindow.tempActiveVersion.link + "]" + modsWindow.tempActiveVersion.name + "[/url][/color]"
-		%versionDescription.text = modsWindow.tempActiveVersion.description
+		%version.text = "Version: [color=#00a2ff][url=" + version.link + "]" + version.name + "[/url][/color]"
+		%versionDescription.text = version.description
 
 func _linkClicked(meta):
 	OS.shell_open(str(meta))
@@ -211,7 +223,7 @@ func undo() -> bool:
 	while true:
 		if undoStack[-1] is UndoSeparator:
 			findModpack()
-			setInfoModpack(modsWindow.tempActiveModpack)
+			setInfoModpack(modsWindow.tempActiveModpack, modsWindow.tempActiveVersion)
 			return true
 		var change = undoStack.pop_back()
 		change.undo()

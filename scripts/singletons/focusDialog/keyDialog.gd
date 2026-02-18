@@ -8,6 +8,8 @@ const CURSE_UN_ICONS:Array[Texture2D] = [ preload("res://assets/ui/focusDialog/k
 
 func focus(focused:KeyBulk, new:bool, _dontRedirect:bool) -> void:
 	%keyColorSelector.setSelect(focused.color)
+	%keyAltColorSelector.setSelect(focused.altColor)
+	%keyAltColorSelector.visible = focused.type == KeyBulk.TYPE.OPERATOR
 	%keyTypeSelector.setSelect(focused.type)
 	%keyCountEdit.visible = focused.type in [KeyBulk.TYPE.NORMAL,KeyBulk.TYPE.EXACT]
 	if new: %keyCountEdit.setValue(focused.count)
@@ -15,11 +17,15 @@ func focus(focused:KeyBulk, new:bool, _dontRedirect:bool) -> void:
 	%keyGlisteningToggle.button_pressed = focused.glistening
 	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and focused.infinite
 	if new: %keyPartialInfiniteEdit.setValue(M.N(focused.infinite))
+	%keyOperationSelector.visible = focused.type == KeyBulk.TYPE.OPERATOR
+	%keyOperationSelector.setSelect(focused.operation)
+	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and (focused.infinite or main.interacted == %keyPartialInfiniteEdit)
+	%keyPartialInfiniteEdit.setValue(M.N(focused.infinite), true)
 	%keyRotorSelector.visible = focused.type == KeyBulk.TYPE.ROTOR
 	%keyUn.visible = focused.type in [KeyBulk.TYPE.STAR, KeyBulk.TYPE.CURSE]
 	%keyUn.button_pressed = !focused.un
 	%keyRotorSelector.setup(focused)
-	%keyReciprocal.visible = focused.type == KeyBulk.TYPE.ROTOR && Mods.active(&"Fractions")
+	%keyReciprocal.visible = focused.type == KeyBulk.TYPE.ROTOR && Mods.active(&"OperatorKey")
 	setKeyUnIcon()
 	if focused.type == KeyBulk.TYPE.ROTOR: %keyRotorSelector.setValue(focused.count)
 	if main.interacted and !main.interacted.is_visible_in_tree(): main.deinteract()
@@ -28,6 +34,16 @@ func focus(focused:KeyBulk, new:bool, _dontRedirect:bool) -> void:
 	else: main.deinteract()
 
 func receiveKey(event:InputEventKey) -> bool:
+	if main.focused.type == KeyBulk.TYPE.OPERATOR:
+		var matched:bool = true
+		if Editor.eventIs(event, &"focusKeyOperationSet"): _keyOperationSelected(KeyBulk.OPERATION.SET)
+		elif Editor.eventIs(event, &"focusKeyOperationAdd"): _keyOperationSelected(KeyBulk.OPERATION.ADD)
+		elif Editor.eventIs(event, &"focusKeyOperationSubtract"): _keyOperationSelected(KeyBulk.OPERATION.SUBTRACT)
+		elif Editor.eventIs(event, &"focusKeyOperationMultiply"): _keyOperationSelected(KeyBulk.OPERATION.MULTIPLY)
+		elif Editor.eventIs(event, &"focusKeyOperationDivide"): _keyOperationSelected(KeyBulk.OPERATION.DIVIDE)
+		elif Editor.eventIs(event, &"focusKeyOperationModulo"): _keyOperationSelected(KeyBulk.OPERATION.MODULO)
+		else: matched = false
+		if matched: return true
 	if Editor.eventIs(event, &"focusKeyNormal"): _keyTypeSelected(KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyExact"): _keyTypeSelected(KeyBulk.TYPE.EXACT if main.focused.type != KeyBulk.TYPE.EXACT else KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyStar"):
@@ -41,6 +57,7 @@ func receiveKey(event:InputEventKey) -> bool:
 	elif Editor.eventIs(event, &"focusKeyCurse") and Mods.active(&"C5"):
 			if main.focused.type == KeyBulk.TYPE.CURSE: Changes.PropertyChange.new(main.focused,&"un",!main.focused.un)
 			else: _keyTypeSelected(KeyBulk.TYPE.CURSE)
+	elif Editor.eventIs(event, &"focusKeyOperator"): _keyTypeSelected(KeyBulk.TYPE.OPERATOR if main.focused.type != KeyBulk.TYPE.OPERATOR else KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyInfinite"): _keyInfiniteToggled(0 if main.focused.infinite else 1)
 	elif Editor.eventIs(event, &"focusKeyGlistening"): _keyGlisteningToggled(!main.focused.glistening)
 	elif Editor.eventIs(event, &"quicksetColor"): Game.editor.quickSet.startQuick(&"quicksetColor", main.focused)
@@ -51,11 +68,16 @@ func changedMods() -> void:
 	%keyGlisteningToggle.visible = Mods.active(&"Glistening")
 	if main.focused is KeyBulk:
 		%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and main.focused.infinite
-		%keyReciprocal.visible = main.focused.type == KeyBulk.TYPE.ROTOR && Mods.active(&"Fractions")
+		%keyReciprocal.visible = main.focused.type == KeyBulk.TYPE.ROTOR && Mods.active(&"OperatorKey")
 
 func _keyColorSelected(color:Game.COLOR) -> void:
 	if main.focused is not KeyBulk: return
 	Changes.addChange(Changes.PropertyChange.new(main.focused,&"color",color))
+	Changes.bufferSave()
+
+func _keyAltColorSelected(color:Game.COLOR) -> void:
+	if main.focused is not KeyBulk: return
+	Changes.addChange(Changes.PropertyChange.new(main.focused,&"altColor",color))
 	Changes.bufferSave()
 
 func _keyTypeSelected(type:KeyBulk.TYPE) -> void:
@@ -63,6 +85,11 @@ func _keyTypeSelected(type:KeyBulk.TYPE) -> void:
 	var beforeType:KeyBulk.TYPE = main.focused.type
 	Changes.addChange(Changes.PropertyChange.new(main.focused,&"type",type))
 	if beforeType != type and type == KeyBulk.TYPE.ROTOR: Changes.PropertyChange.new(main.focused,&"count",M.nONE)
+	Changes.bufferSave()
+
+func _keyOperationSelected(operation:KeyBulk.OPERATION) -> void:
+	if main.focused is not KeyBulk: return
+	Changes.addChange(Changes.PropertyChange.new(main.focused,&"operation",operation))
 	Changes.bufferSave()
 
 func _keyCountSet(count:PackedInt64Array) -> void:

@@ -15,6 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://ulo77sni12v" path="res://assets/ui/focusDialog/doorType/combo.png" id="11_jwt4y"]
 [ext_resource type="Texture2D" uid="uid://bowkgmjrwugjj" path="res://assets/ui/focusDialog/doorType/gate.png" id="12_qi8n2"]
 [ext_resource type="Texture2D" uid="uid://d2tw3epi1grlq" path="res://assets/ui/focusDialog/doorType/spend.png" id="13_jwt4y"]
+[ext_resource type="Script" path="res://scripts/nodes/focusDialog/selector/keyOperationSelector.gd" id="13_rrq8c"]
 [ext_resource type="Texture2D" uid="uid://bxif3afno48fi" path="res://assets/ui/focusDialog/keySplitType/reciprocal.png" id="14_2wjug"]
 [ext_resource type="Script" uid="uid://d07pxhp1r6xex" path="res://scripts/nodes/focusDialog/lockHandler.gd" id="14_31m74"]
 [ext_resource type="Script" uid="uid://dbmpg02ass72r" path="res://scripts/nodes/focusDialog/spend.gd" id="14_e2stj"]
@@ -245,6 +246,12 @@ unique_name_in_owner = true
 layout_mode = 2
 context = NodePath("../../../../..")
 
+[node name="keyOperationSelector" type="GridContainer" parent="keyDialog/c/c/c" unique_id=2013174328]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+script = ExtResource("13_rrq8c")
+
 [node name="keyRotorSelector" type="GridContainer" parent="keyDialog/c/c/c" unique_id=40169752]
 unique_name_in_owner = true
 layout_mode = 2
@@ -265,6 +272,14 @@ layout_mode = 2
 size_flags_horizontal = 4
 toggle_mode = true
 icon = ExtResource("14_2wjug")
+
+[node name="keyAltColorSelector" type="GridContainer" parent="keyDialog/c/c/c" unique_id=1859233810 groups=["modUI"]]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("1_eqegh")
+script = ExtResource("3_wmate")
+metadata/_custom_type_script = "uid://c70juj2p5s6yd"
 
 [node name="doorDialog" type="Control" parent="." unique_id=1206125138 groups=["modUI"]]
 unique_name_in_owner = true
@@ -810,9 +825,11 @@ default_color = Color(0.8352941, 0.8352941, 0.8352941, 1)
 [connection signal="valueSet" from="keyDialog/c/c/c/c/keyPartialInfinite/keyPartialInfiniteEdit" to="keyDialog" method="_keyPartialInfiniteSet"]
 [connection signal="toggled" from="keyDialog/c/c/c/c/keyGlisteningToggle" to="keyDialog" method="_keyGlisteningToggled"]
 [connection signal="valueSet" from="keyDialog/c/c/c/keyCountEdit" to="keyDialog" method="_keyCountSet"]
+[connection signal="select" from="keyDialog/c/c/c/keyOperationSelector" to="keyDialog" method="_keyOperationSelected"]
 [connection signal="select" from="keyDialog/c/c/c/keyRotorSelector" to="keyDialog" method="_keyRotorSelected"]
 [connection signal="toggled" from="keyDialog/c/c/c/keyUn" to="keyDialog" method="_keyUnToggled"]
 [connection signal="toggled" from="keyDialog/c/c/c/keyReciprocal" to="keyDialog" method="_keyReciprocalToggled"]
+[connection signal="select" from="keyDialog/c/c/c/keyAltColorSelector" to="keyDialog" method="_keyAltColorSelected"]
 [connection signal="pressed" from="doorDialog/c/door/c/c/doorTypes/simple" to="doorDialog" method="_doorTypeSelected" binds= [0]]
 [connection signal="pressed" from="doorDialog/c/door/c/c/doorTypes/combo" to="doorDialog" method="_doorTypeSelected" binds= [1]]
 [connection signal="pressed" from="doorDialog/c/door/c/c/doorTypes/gate" to="doorDialog" method="_doorTypeSelected" binds= [2]]

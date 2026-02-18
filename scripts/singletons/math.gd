@@ -196,7 +196,7 @@ func simplify(n:PackedInt64Array) -> PackedInt64Array:
 	match system:
 		SYSTEM.COMPLEX: return n
 		SYSTEM.FRACTIONS, _:
-			if n[2] == 0: return n # propagate error state
+			if n[2] == 0: return ERROR # propagate error state
 			var divisor:int = gcd(gcd(n[0], n[1]), n[2])
 			@warning_ignore("integer_division") return [n[0]/divisor, n[1]/divisor, n[2]/divisor]
 
@@ -301,7 +301,16 @@ func floor(n:PackedInt64Array) -> PackedInt64Array:
 		SYSTEM.COMPLEX: return n
 		SYSTEM.FRACTIONS, _: return [intDiv(n[0],n[2]), intDiv(n[1],n[2]), 1]
 
-# comparators
+## ceils number maybe 
+func ceil(n:PackedInt64Array) -> PackedInt64Array:
+	match system:
+		SYSTEM.COMPLEX: return n
+		SYSTEM.FRACTIONS, _: 
+			var real:int = intDiv(n[0],n[2])
+			var imag:int = intDiv(n[1],n[2])
+			if M.neq([n[0],0,1], [real,0,1]): real += 1
+			if M.neq([n[0],0,1], [imag,0,1]): imag += 1
+			return [intDiv(n[0],n[2]), intDiv(n[1],n[2]), 1]
 
 ## (a,b -> a == b)
 func eq(a:PackedInt64Array, b:PackedInt64Array) -> bool: return a == b

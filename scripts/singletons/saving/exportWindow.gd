@@ -9,14 +9,13 @@ var fileExtension:String
 var exporter:GDScript
 
 var interacted:PanelContainer
+var numberEdits:Array[NumberEdit] = []
 
 func _ready() -> void:
 	Game.editor.exportWindow = self
 	if OS.has_feature('web'):
 		%exportPathSetting.visible = false
 	_setType(type)
-	%roomIDEdit.context = self
-	%idIterStartEdit.context = self
 	%roomIDEdit.setValue(M.N(ExportRoomGMX.roomID))
 	%idIterStartEdit.setValue(M.N(ExportRoomGMX.idIterStart))
 
@@ -57,9 +56,7 @@ func _export():
 func _input(event:InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed() and interacted: interacted.receiveKey(event)
 
-func tabbed(_edit:PanelContainer) -> void: pass
-
-func interact(edit:NewNumberEdit) -> void:
+func interact(edit:NumberEdit) -> void:
 	deinteract()
 	edit.interact()
 	interacted = edit

@@ -12,9 +12,11 @@ class_name FocusDialog
 
 var focused:GameObject # the object that is currently focused
 var componentFocused:GameComponent # you can focus both a door and a lock at the same time so
-var interacted:NewNumberEdit # the number edit that is currently interacted
 var activeDialog:Control
-var bufferFocus:GameComponent
+var bufferFocus:bool = false
+
+var interacted:NumberEdit # the number edit that is currently interacted
+var numberEdits:Array[NumberEdit] = []
 
 var above:bool = false # display above the object instead
 
@@ -54,7 +56,7 @@ func defocus() -> void:
 	if object is RemoteLock: object.queue_redraw()
 	deinteract()
 	defocusComponent()
-	bufferFocus = null
+	bufferFocus = false
 
 func focusComponent(component:GameComponent) -> void:
 	if !component:
@@ -71,11 +73,11 @@ func defocusComponent() -> void:
 	if componentFocused is Lock and !Mods.active(&"ZeroCostLock") and !(Mods.active(&"C3") and componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL, Lock.TYPE.EXACT]) and M.nex(componentFocused.count): Changes.addChange(Changes.PropertyChange.new(componentFocused,&"count",M.ONE))
 	componentFocused = null
 	deinteract()
-	bufferFocus = null
+	bufferFocus = false
 
-func interact(edit:NewNumberEdit) -> void:
+func interact(edit:NumberEdit, last:bool=false) -> void:
 	deinteract()
-	edit.interact()
+	edit.interact(last)
 	interacted = edit
 
 func deinteract() -> void:
@@ -83,86 +85,52 @@ func deinteract() -> void:
 	interacted.deinteract()
 	interacted = null
 
-func interactDoorFirstEdit() -> void:
-	defocusComponent()
-	focus(focused)
-
-func interactDoorLastEdit() -> void:
-	defocusComponent()
-	focus(focused)
-	interact(%doorCopiesEdit.imaginaryEdit)
-
-func interactLockFirstEdit(index:int) -> void:
-	focusComponent(focused.locks[index])
-
-func interactLockLastEdit(index:int) -> void:
-	focusComponent(focused.locks[index])
-	if componentFocused.type in [Lock.TYPE.NORMAL, Lock.TYPE.EXACT]: interact(%doorAxialNumberEdit)
-	elif componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL]:
-		if componentFocused.isPartial: interact(%partialBlastDenominatorEdit.imaginaryEdit)
-		else: interact(%partialBlastNumeratorEdit.imaginaryEdit)
-	else: deinteract()
-
-func tabbed(numberEdit:PanelContainer) -> void:
-	Game.editor.grab_focus()
-	if Input.is_key_pressed(KEY_SHIFT):
-		match numberEdit.purpose:
-			NumberEdit.PURPOSE.IMAGINARY: interact(numberEdit.get_parent().realEdit)
-			NumberEdit.PURPOSE.REAL:
-				if focused is KeyBulk:
-					interact(%keyCountEdit.imaginaryEdit)
-				elif focused is Door:
-					if numberEdit == %doorCopiesEdit.realEdit:
-						if len(focused.locks) > 0: interactLockLastEdit(-1)
-						else: interactDoorLastEdit()
-					elif numberEdit == %partialBlastDenominatorEdit.realEdit:
-						interact(%partialBlastNumeratorEdit.imaginaryEdit)
-					elif numberEdit == %partialBlastNumeratorEdit.realEdit:
-						if componentFocused.index == 0: interactDoorLastEdit()
-						else: interactLockLastEdit(componentFocused.index-1)
-				elif focused.get_script() in [PlayerPlaceholderObject, PlayerSpawn]:
-					if numberEdit == %playerKeyCountEdit.realEdit:
-						playerDialog.setSelectedColor(Mods.previousColor(playerDialog.color))
-						interact(%playerKeyGlistenEdit.imaginaryEdit if Mods.active(&"Glistening") else %playerKeyCountEdit.imaginaryEdit)
-					if numberEdit == %playerKeyGlistenEdit.realEdit: interact(%playerKeyCountEdit.imaginaryEdit)
-			NumberEdit.PURPOSE.AXIAL:
-				assert(componentFocused)
-				if componentFocused.index == 0: interactDoorLastEdit()
-				else: interactLockLastEdit(componentFocused.index-1)
-	else:
-		match numberEdit.purpose:
-			NumberEdit.PURPOSE.REAL:
-				interact(numberEdit.get_parent().imaginaryEdit)
-			NumberEdit.PURPOSE.IMAGINARY:
-				if focused is KeyBulk:
-					interact(%keyCountEdit.realEdit)
-				elif focused is Door:
-					if numberEdit == %doorCopiesEdit.imaginaryEdit:
-						if len(focused.locks) > 0: interactLockFirstEdit(0)
-						else: interactDoorFirstEdit()
-					elif numberEdit == %partialBlastNumeratorEdit.imaginaryEdit and componentFocused.isPartial:
-						interact(%partialBlastDenominatorEdit.realEdit)
-					elif numberEdit in [%partialBlastNumeratorEdit.imaginaryEdit, %partialBlastDenominatorEdit.imaginaryEdit]:
-						if componentFocused.index == len(focused.locks) - 1: interactDoorFirstEdit()
-						else: interactLockFirstEdit(componentFocused.index+1)
-				elif focused.get_script() in [PlayerPlaceholderObject, PlayerSpawn]:
-					if numberEdit == (%playerKeyGlistenEdit.imaginaryEdit if Mods.active(&"Glistening") else %playerKeyCountEdit.imaginaryEdit):
-						playerDialog.setSelectedColor(Mods.nextColor(playerDialog.color))
-						interact(%playerKeyCountEdit.realEdit)
-					if Mods.active(&"Glistening") and numberEdit == %playerKeyCountEdit.imaginaryEdit: interact(%playerKeyGlistenEdit.realEdit)
-			NumberEdit.PURPOSE.AXIAL:
-				assert(componentFocused)
-				if componentFocused.index == len(focused.locks) - 1: interactDoorFirstEdit()
-				else: interactLockFirstEdit(componentFocused.index+1)
-
-func receiveKey(event:InputEvent) -> bool:
+func receiveKey(event:InputEventKey) -> bool:
 	if activeDialog and activeDialog.receiveKey(event): return true
 	else:
 		if Editor.eventIs(event, &"editDelete"):
 			Changes.addChange(Changes.DeleteComponentChange.new(focused))
 			Changes.bufferSave()
+		elif event.keycode == KEY_TAB:
+			Game.editor.grab_focus()
+			if interacted: 
+				var index:int = numberEdits.find(interacted)
+				if Input.is_key_pressed(KEY_SHIFT):
+					index -= 1
+					while !numberEdits[index].is_visible_in_tree():
+						if index == -1: previousMenu()
+						index -= 1
+					interact(numberEdits[index], true)
+				else:
+					index += 1
+					while !numberEdits[index].is_visible_in_tree():
+						if index == len(numberEdits)-1:
+							nextMenu(); index = 0
+						else: index += 1
+					interact(numberEdits[index])
+			else: bufferFocus = true
 		else: return false
 	return true
+
+func previousMenu() -> void:
+	match activeDialog:
+		doorDialog:
+			if componentFocused:
+				if componentFocused.index > 0: focusComponent(focused.locks[componentFocused.index-1])
+				else: doorDialog._spendSelected()
+			else: focusComponent(focused.locks[-1])
+		playerDialog:
+			playerDialog.setSelectedColor(Mods.previousColor(playerDialog.color))
+
+func nextMenu() -> void:
+	match activeDialog:
+		doorDialog:
+			if componentFocused:
+				if componentFocused.index == len(focused.locks) - 1: doorDialog._spendSelected()
+				else: focusComponent(focused.locks[componentFocused.index+1])
+			else: focusComponent(focused.locks[0])
+		playerDialog:
+			playerDialog.setSelectedColor(Mods.nextColor(playerDialog.color))
 
 const EDGE_MARGIN:float = 4
 const OBJECT_MARGIN:float = 16 # between the dialog and the object; where the speech bubbler goes
@@ -170,9 +138,9 @@ const SPEECH_BUBBLER_MARGIN:float = 10 # between speech bubbler and edge of dial
 
 func _process(_delta:float) -> void:
 	if bufferFocus:
-		if bufferFocus is GameObject: focus(bufferFocus)
-		else: focusComponent(bufferFocus)
-		bufferFocus = null
+		if componentFocused: focusComponent(componentFocused)
+		elif focused: focus(focused)
+		bufferFocus = false
 	if focused and activeDialog:
 		visible = true
 		# position the dialog every frame (could be optimised but i dont care)

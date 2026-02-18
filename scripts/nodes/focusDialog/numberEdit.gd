@@ -1,5 +1,5 @@
 extends PanelContainer
-class_name NewNumberEdit
+class_name NumberEdit
 
 signal valueSet(value:PackedInt64Array)
 
@@ -40,12 +40,11 @@ enum TYPE {ALL, AXIAL, NONNEGATIVE_INTEGER}
 		allowZeroI = value
 		if !allowZeroI: isZeroI = false
 @export var allowZero:bool = true
-
-var context:Node
+## the parent. usually focusDialog
+@export var context:Node
 
 func _ready() -> void:
-	await Game.editor.ready
-	context = Game.editor.focusDialog
+	context.numberEdits.append(self)
 
 func setValue(value:PackedInt64Array) -> void:
 	text = M.str(value)
@@ -58,12 +57,15 @@ func setZeroI() -> void:
 	parseText(true)
 	buildText()
 
-func interact() -> void:
+func interact(last:bool=false) -> void:
 	theme_type_variation = &"NumberEditPanelContainerSelected"
-	if numbers: numberCaptureCursor(numberStarts[0])
+	if numbers: numberCaptureCursor(numberStarts[-1 if last else 0])
+	%cursor.visible = true
 
 func deinteract() -> void:
+	setValue(result)
 	theme_type_variation = &"NumberEditPanelContainer"
+	%cursor.visible = false
 
 func parseText(manual:bool=false) -> void:
 	textLen = len(text)
@@ -134,7 +136,7 @@ func parseText(manual:bool=false) -> void:
 func evaluate(manual:bool=false) -> void:
 	expressionErrored = false
 	result = evaluateExpression(currentExpression)
-	theme_type_variation = &"NumberEditPanelContainerSelected"
+	theme_type_variation = &"NumberEditPanelContainerSelected" if context.interacted == self else &"NumberEditPanelContainer"
 	isZeroI = allowZeroI and text == "0i"
 	if !allowZero and !isZeroI and M.nex(result): displayError()
 	elif !expressionErrored:
@@ -353,13 +355,12 @@ func receiveKey(key:InputEventKey) -> bool:
 					numberCaptureCursor(cursorStart)
 		KEY_TAB:
 			if Input.is_key_pressed(KEY_SHIFT):
-				if cursorMode == CURSOR_MODE.NUMBER and cursorSelectedNumber == 0: return false
 				for number in range(numbers,0,-1): if numberStarts[number-1] < cursorStart:
-					numberCaptureCursor(numberStarts[number-1]); break
+					numberCaptureCursor(numberStarts[number-1]); return true
 			else:
-				if cursorMode == CURSOR_MODE.NUMBER and cursorSelectedNumber == numbers-1: return false
 				for number in numbers: if numberEnds[number] > cursorEnd:
-					numberCaptureCursor(numberStarts[number]); break
+					numberCaptureCursor(numberStarts[number]); return true
+			return false
 		KEY_A:
 			if Input.is_key_pressed(KEY_CTRL):
 				selectAll()

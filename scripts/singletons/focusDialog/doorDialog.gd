@@ -90,15 +90,6 @@ func focusComponent(component:GameComponent, new:bool) -> void: # Lock or Remote
 	else: main.deinteract()
 
 func receiveKey(event:InputEvent) -> bool:
-	match event.keycode:
-		KEY_TAB:
-			assert(main.componentFocused) # should be handled by interact otherwise
-			if Input.is_key_pressed(KEY_SHIFT):
-				if main.componentFocused.index == 0: main.interactDoorLastEdit()
-				else: main.interactLockLastEdit(main.componentFocused.index-1)
-			else:
-				if main.componentFocused.index == len(main.componentFocused.parent.locks)-1: main.interactDoorFirstEdit()
-				else: main.interactLockFirstEdit(main.componentFocused.index+1)
 	var blastSettings:bool = !main.interacted and main.componentFocused and main.componentFocused.type == Lock.TYPE.BLAST
 	if Editor.eventIs(event, &"numberNegate"):
 		if blastSettings: _blastLockSignSet(!%blastLockSign.button_pressed)

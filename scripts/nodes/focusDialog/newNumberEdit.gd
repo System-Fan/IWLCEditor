@@ -25,7 +25,7 @@ var numbers:int = 0
 var numberStarts:Array[int] = []
 var numberEnds:Array[int] = []
 var numberValues:Array[int] = []
-var numberSemiNegative:Array[bool] = [] # if a number is negative but like only kinda (the - is instead of a + of the number before it, not part of the number)
+var numberSemiNegative:Array[bool] = [] # if a number's sign is currently inaccurate, from flipping a +/- without reparsing. saves a bit of performance
 var texts:Array[String] = [""] # one at the start and one after each number. may be empty
 var currentExpression:Array = []
 var expressionErrored:bool = false
@@ -73,7 +73,7 @@ func parseText(manual:bool=false) -> void:
 			if thisNumberStart == -1:
 				numbers += 1
 				numberStarts.append(i)
-				numberSemiNegative.append(i > 0 && text[i-1] == "-")
+				numberSemiNegative.append(false)
 				thisNumberStart = i
 				previousNumberEnd = -1
 		else:
@@ -253,7 +253,9 @@ enum EXPRESSION {NUMBER, AXIS, ADD, SUB, TIMES, DIVIDE, ERROR, CONSTANT}
 
 func evaluateExpression(expression:Array) -> PackedInt64Array:
 	match expression[0]:
-		EXPRESSION.NUMBER: return M.N(numberValues[expression[1]])
+		EXPRESSION.NUMBER:
+			if numberSemiNegative[expression[1]]: return M.negate(M.N(numberValues[expression[1]]))
+			return M.N(numberValues[expression[1]])
 		EXPRESSION.AXIS: return M.times(expression[1], evaluateExpression(expression[2]))
 		EXPRESSION.ADD: return M.add(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
 		EXPRESSION.SUB: return M.sub(evaluateExpression(expression[1]), evaluateExpression(expression[2]))
@@ -276,7 +278,6 @@ func buildText() -> void:
 func receiveKey(key:InputEventKey) -> bool:
 	Game.editor.grab_focus()
 	match key.keycode:
-		KEY_SHIFT, KEY_CTRL, KEY_ALT, KEY_META: return false
 		KEY_RIGHT:
 			cursorMode = CURSOR_MODE.NORMAL
 			if Input.is_key_pressed(KEY_SHIFT):
@@ -345,33 +346,29 @@ func receiveKey(key:InputEventKey) -> bool:
 						var prevStart:int = cursorStart
 						if Input.is_key_pressed(KEY_CTRL): cursorStart = previousPointOfInterest()
 						else: cursorStart -= 1
-						text = text.erase(cursorStart, prevStart-cursorStart)
 						cursorEnd = cursorStart
-						parseText()
-						buildText()
+						Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, prevStart-cursorStart)))
 					else:
-						text = text.erase(cursorStart, cursorEnd - cursorStart)
 						cursorEnd = cursorStart
-						parseText()
-						buildText()
+						Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, cursorEnd - cursorStart)))
 				CURSOR_MODE.NUMBER:
 					if numberValues[cursorSelectedNumber] == 0 or Input.is_key_pressed(KEY_CTRL):
 						cursorMode = CURSOR_MODE.NORMAL
-						text = text.erase(cursorStart, cursorEnd - cursorStart)
 						cursorEnd = cursorStart
-						parseText()
-						buildText()
+						Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, cursorEnd - cursorStart)))
 					else:
 						setNumber(cursorSelectedNumber, 0)
 						numberCaptureCursor(cursorStart)
 						buildText()
+			Changes.bufferSave()
 		_:
-			match cursorMode:
-				CURSOR_MODE.NORMAL:
-					if key.keycode >= 32 and key.keycode < 128:
+			if key.keycode >= 32 and key.keycode < 128:
+				if Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_ALT) or Input.is_key_pressed(KEY_META): return false
+				match cursorMode:
+					CURSOR_MODE.NORMAL:
 						var character:String = char(key.unicode)
 						if cursorEnd > cursorStart:
-							text = text.erase(cursorStart, cursorEnd - cursorStart)
+							Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, cursorEnd - cursorStart), false))
 						elif "0123456789".contains(character):
 							var endNumber:int = numberEnds.find(cursorStart)
 							if endNumber != -1:
@@ -387,23 +384,22 @@ func receiveKey(key:InputEventKey) -> bool:
 								cursorEnd = cursorStart
 								buildText()
 								return true
-						text = text.insert(cursorStart, character)
 						cursorStart += 1
 						cursorEnd = cursorStart
-						parseText()
-						buildText()
-				CURSOR_MODE.NUMBER:
-					var character:String = char(key.unicode)
-					if Editor.eventIs(key, &"numberTimesI"): pass
-					elif Editor.eventIs(key, &"numberNegate"):
-						setNumber(cursorSelectedNumber, -numberValues[cursorSelectedNumber])
-						numberCaptureCursor(cursorStart)
-						buildText()
-					elif "0123456789".contains(character):
-						setNumber(cursorSelectedNumber, character.to_int())
-						numberCaptureCursor(cursorStart)
-						buildText()
-					else: return false
+						Changes.addChange(Changes.NumberEditTextChange.new(self, text.insert(cursorStart, character)))
+					CURSOR_MODE.NUMBER:
+						var character:String = char(key.unicode)
+						if Editor.eventIs(key, &"numberTimesI"): pass
+						elif Editor.eventIs(key, &"numberNegate"):
+							setNumber(cursorSelectedNumber, -numberValues[cursorSelectedNumber])
+							numberCaptureCursor(cursorStart)
+							buildText()
+						elif "0123456789".contains(character):
+							setNumber(cursorSelectedNumber, character.to_int())
+							numberCaptureCursor(cursorStart)
+							buildText()
+						else: return false
+			else: return false
 	return true
 
 ## for ctrl+right
@@ -428,28 +424,30 @@ func changeNumber(number:int, by:int) -> void:
 
 func setNumber(number:int, to:int) -> void:
 	var prevLen:int = numberEnds[number] - numberStarts[number]
-	numberValues[number] = to
-	numberCheckSign(number)
+	Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberValues", numberCheckSign(number, to)))
 	var lenChange:int = len(str(numberValues[number])) - prevLen
 	numberEnds[number] += lenChange
 	for shiftedNumber in range(number+1, numbers):
-		numberStarts[shiftedNumber] += lenChange
-		numberEnds[shiftedNumber] += lenChange
-	textLen += lenChange
+		Changes.addChange(Changes.NumberEditNumberChange.new(self, shiftedNumber, &"numberStarts", numberStarts[shiftedNumber] + lenChange))
+		Changes.addChange(Changes.NumberEditNumberChange.new(self, shiftedNumber, &"numberEnds", numberEnds[shiftedNumber] + lenChange))
+	Changes.addChange(Changes.GlobalPropertyChange.new(self, &"textLen", textLen + lenChange))
 	evaluate()
 
-func numberCheckSign(number:int) -> void:
-	if numberSemiNegative[number]:
+func numberCheckSign(number:int, to:int) -> int:
+	var numberText:String = texts[number] # the text before the number
+	if len(numberText) == 0: return to
+	if numberText[-1] == "-":
 		if numberValues[number] <= 0:
-			numberValues[number] *= -1
-			texts[number][-1] = "+"
-			numberSemiNegative[number] = false
-	else:
-		if numberValues[number] < 0 and texts[number][-1] == "+":
-			numberValues[number] *= -1
-			texts[number][-1] = "-"
-			numberSemiNegative[number] = true
-
+			numberText[-1] = "+" # TODO: this
+			Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberText", numberText))
+			Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberSemiNegative", !numberSemiNegative[number]))
+			return -to
+	elif numberValues[number] < 0 and texts[number][-1] == "+":
+		numberText[-1] = "-"
+		Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberText", numberText))
+		Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberSemiNegative", !numberSemiNegative[number]))
+		return -to
+	return to
 
 func numberCaptureCursor(fromPosition:int) -> void:
 	for number in numbers:

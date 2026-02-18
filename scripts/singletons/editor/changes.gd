@@ -692,3 +692,51 @@ class ConvertNumberArrayChange extends Change:
 	
 	func _to_string() -> String:
 		return "<ConvertNumberArrayChange:"+str(before)+","+str(from)+">"
+
+class NumberEditNumberChange extends Change:
+	var numberEdit:NewNumberEdit
+	var number:int
+	var array:StringName
+	var before:Variant
+	var after:Variant
+
+	## you still need to build the text manually afterwards
+	func _init(_numberEdit:NewNumberEdit, _number:int, _array:StringName, _after:Variant) -> void:
+		numberEdit = _numberEdit
+		number = _number
+		array = _array
+		before = numberEdit.get(array)[number]
+		after = _after
+		do(false)
+	
+	func do(build:bool=true) -> void:
+		numberEdit.get(array)[number] = after
+		if build: numberEdit.buildText()
+	
+	func undo() -> void:
+		numberEdit.get(array)[number] = before
+		numberEdit.buildText()
+
+## more expensive than a number change, since we have to parse the text
+class NumberEditTextChange extends Change:
+	var numberEdit:NewNumberEdit
+	var before:String
+	var after:String
+
+	## dont parse if this is immediately followed by another text change
+	func _init(_numberEdit:NewNumberEdit, _after:String, parse:bool=true) -> void:
+		numberEdit = _numberEdit
+		before = numberEdit.text
+		after = _after
+		do(parse)
+	
+	func do(parse:bool=true) -> void:
+		numberEdit.text = after
+		if parse:
+			numberEdit.parseText(true)
+			numberEdit.buildText()
+	
+	func undo() -> void:
+		numberEdit.text = before
+		numberEdit.parseText(true)
+		numberEdit.buildText()

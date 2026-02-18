@@ -86,6 +86,11 @@ static var mods:Dictionary[StringName, Mod] = {
 		"More Key Counter Widths",
 		"Adds larger sizes for key counters. Added by Bored",
 		[&"NstdKeyCounterWidth"]
+	),
+	&"OperatorKey": Mod.new(
+		"Operator Keys",
+		"Adds Operator keys and reciprocal keys. Added by Bored",
+		[]
 	)
 }
 
@@ -202,7 +207,7 @@ func keyTypes() -> Array[KeyBulk.TYPE]:
 		KeyBulk.TYPE.ROTOR
 	]
 	if active(&"C5"): array.append(KeyBulk.TYPE.CURSE)
-	if active(&"Fractions"): array.append(KeyBulk.TYPE.OPERATOR)
+	if active(&"OperatorKey"): array.append(KeyBulk.TYPE.OPERATOR)
 	return array
 
 func lockTypes() -> Array[Lock.TYPE]:

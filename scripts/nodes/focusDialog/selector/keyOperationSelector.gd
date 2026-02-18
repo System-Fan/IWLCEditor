@@ -4,10 +4,10 @@ class_name keyOperationSelector
 const ICONS:Array[Texture2D] = [
 	preload("res://assets/ui/focusDialog/keySplitType/set.png"),
 	preload("res://assets/ui/focusDialog/keySplitType/add.png"),
-	preload("res://assets/ui/focusDialog/keySplitType/sub.png"),
-	preload("res://assets/ui/focusDialog/keySplitType/times.png"),
-	preload("res://assets/ui/focusDialog/keySplitType/div.png"),
-	preload("res://assets/ui/focusDialog/keySplitType/mod.png"),
+	preload("res://assets/ui/focusDialog/keySplitType/subtract.png"),
+	preload("res://assets/ui/focusDialog/keySplitType/multiply.png"),
+	preload("res://assets/ui/focusDialog/keySplitType/divide.png"),
+	preload("res://assets/ui/focusDialog/keySplitType/modulo.png"),
 ]
 
 func _ready() -> void:
@@ -19,12 +19,12 @@ func _ready() -> void:
 	for button in buttons:
 		var explanation:ControlExplanation
 		match button.value:
-			KeyBulk.OPERATION.SET: explanation = ControlExplanation.new("[%s]Set set operation", [&"focusOperationSet"])
-			KeyBulk.OPERATION.ADD: explanation = ControlExplanation.new("[%s]Set addition operation", [&"focusOperationAdd"])
-			KeyBulk.OPERATION.SUBTRACT: explanation = ControlExplanation.new("[%s]Set subtraction operation", [&"focusOperationSub"])
-			KeyBulk.OPERATION.MULTIPLY: explanation = ControlExplanation.new("[%s]Set multiplication operation", [&"focusOperationMult"])
-			KeyBulk.OPERATION.DIVIDE: explanation = ControlExplanation.new("[%s]Set division operation", [&"focusOperationDiv"])
-			KeyBulk.OPERATION.MODULO: explanation = ControlExplanation.new("[%s]Set modulo operation", [&"focusOperationMod"])
+			KeyBulk.OPERATION.SET: explanation = ControlExplanation.new("[%s]Set set operation", [&"focusKeyOperationSet"])
+			KeyBulk.OPERATION.ADD: explanation = ControlExplanation.new("[%s]Set addition operation", [&"focusKeyOperationAdd"])
+			KeyBulk.OPERATION.SUBTRACT: explanation = ControlExplanation.new("[%s]Set subtraction operation", [&"focusKeyOperationSubtract"])
+			KeyBulk.OPERATION.MULTIPLY: explanation = ControlExplanation.new("[%s]Set multiplication operation", [&"focusKeyOperationMultiply"])
+			KeyBulk.OPERATION.DIVIDE: explanation = ControlExplanation.new("[%s]Set division operation", [&"focusKeyOperationDivide"])
+			KeyBulk.OPERATION.MODULO: explanation = ControlExplanation.new("[%s]Set modulo operation", [&"focusKeyOperationModulo"])
 		Explainer.addControl(button,explanation)
 
 func setSelect(value:Variant) -> void:

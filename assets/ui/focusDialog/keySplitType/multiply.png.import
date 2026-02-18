@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bhjitxtishiyv"
-path="res://.godot/imported/sub.png-d193c3077f5e4711a229127466ce1253.ctex"
+uid="uid://doee72ay71rxh"
+path="res://.godot/imported/multiply.png-2091dc809d791796c59aa346b92db77d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/focusDialog/keySplitType/sub.png"
-dest_files=["res://.godot/imported/sub.png-d193c3077f5e4711a229127466ce1253.ctex"]
+source_file="res://assets/ui/focusDialog/keySplitType/multiply.png"
+dest_files=["res://.godot/imported/multiply.png-2091dc809d791796c59aa346b92db77d.ctex"]
 
 [params]
 

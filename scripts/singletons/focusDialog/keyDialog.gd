@@ -33,7 +33,16 @@ func focus(focused:KeyBulk, _new:bool, _dontRedirect:bool) -> void:
 	else: main.deinteract()
 
 func receiveKey(event:InputEventKey) -> bool:
-	# return %newNumberEdit.receiveKey(event)
+	if main.focused.type == KeyBulk.TYPE.OPERATOR:
+		var matched:bool = true
+		if Editor.eventIs(event, &"focusKeyOperationSet"): _keyOperationSelected(KeyBulk.OPERATION.SET)
+		elif Editor.eventIs(event, &"focusKeyOperationAdd"): _keyOperationSelected(KeyBulk.OPERATION.ADD)
+		elif Editor.eventIs(event, &"focusKeyOperationSubtract"): _keyOperationSelected(KeyBulk.OPERATION.SUBTRACT)
+		elif Editor.eventIs(event, &"focusKeyOperationMultiply"): _keyOperationSelected(KeyBulk.OPERATION.MULTIPLY)
+		elif Editor.eventIs(event, &"focusKeyOperationDivide"): _keyOperationSelected(KeyBulk.OPERATION.DIVIDE)
+		elif Editor.eventIs(event, &"focusKeyOperationModulo"): _keyOperationSelected(KeyBulk.OPERATION.MODULO)
+		else: matched = false
+		if matched: return true
 	if Editor.eventIs(event, &"focusKeyNormal"): _keyTypeSelected(KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyExact"): _keyTypeSelected(KeyBulk.TYPE.EXACT if main.focused.type != KeyBulk.TYPE.EXACT else KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyStar"):
@@ -47,6 +56,7 @@ func receiveKey(event:InputEventKey) -> bool:
 	elif Editor.eventIs(event, &"focusKeyCurse") and Mods.active(&"C5"):
 			if main.focused.type == KeyBulk.TYPE.CURSE: Changes.PropertyChange.new(main.focused,&"un",!main.focused.un)
 			else: _keyTypeSelected(KeyBulk.TYPE.CURSE)
+	elif Editor.eventIs(event, &"focusKeyOperator"): _keyTypeSelected(KeyBulk.TYPE.OPERATOR if main.focused.type != KeyBulk.TYPE.OPERATOR else KeyBulk.TYPE.NORMAL)
 	elif Editor.eventIs(event, &"focusKeyInfinite"): _keyInfiniteToggled(0 if main.focused.infinite else 1)
 	elif Editor.eventIs(event, &"focusKeyGlistening"): _keyGlisteningToggled(!main.focused.glistening)
 	elif Editor.eventIs(event, &"quicksetColor"): editor.quickSet.startQuick(&"quicksetColor", main.focused)

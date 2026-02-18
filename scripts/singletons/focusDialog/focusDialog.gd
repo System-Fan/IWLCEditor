@@ -55,6 +55,7 @@ func defocus() -> void:
 	if object is RemoteLock: object.queue_redraw()
 	deinteract()
 	defocusComponent()
+	bufferFocus = null
 
 func focusComponent(component:GameComponent) -> void:
 	if !component:
@@ -71,6 +72,7 @@ func defocusComponent() -> void:
 	if componentFocused is Lock and !Mods.active(&"ZeroCostLock") and !(Mods.active(&"C3") and componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL, Lock.TYPE.EXACT]) and M.nex(componentFocused.count): Changes.addChange(Changes.PropertyChange.new(componentFocused,&"count",M.ONE))
 	componentFocused = null
 	deinteract()
+	bufferFocus = null
 
 func interact(edit:NewNumberEdit) -> void:
 	deinteract()

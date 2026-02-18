@@ -128,7 +128,6 @@ func evaluate(manual:bool=false) -> void:
 	expressionErrored = false
 	result = evaluateExpression(currentExpression)
 	theme_type_variation = &"NumberEditPanelContainerSelected"
-	print(text, manual)
 	isZeroI = allowZeroI and text == "0i"
 	if !allowZero and !isZeroI and M.nex(result): displayError()
 	elif !expressionErrored:
@@ -315,6 +314,7 @@ func receiveKey(key:InputEventKey) -> bool:
 					else: cursorStart += 1
 					cursorEnd = cursorStart
 					numberCaptureCursor(cursorStart)
+			placeCursor()
 		KEY_LEFT:
 			cursorMode = CURSOR_MODE.NORMAL
 			if Input.is_key_pressed(KEY_SHIFT):
@@ -327,6 +327,7 @@ func receiveKey(key:InputEventKey) -> bool:
 					else: cursorStart -= 1
 					cursorEnd = cursorStart
 					numberCaptureCursor(cursorStart)
+			placeCursor()
 		KEY_UP:
 			match cursorMode:
 				CURSOR_MODE.NORMAL:
@@ -342,7 +343,6 @@ func receiveKey(key:InputEventKey) -> bool:
 						if numberStarts[number] >= cursorStart && numberEnds[number] <= cursorEnd: changeNumber(number, -1)
 				CURSOR_MODE.NUMBER:
 					changeNumber(cursorSelectedNumber, -1)
-					print(numberEnds)
 					numberCaptureCursor(cursorStart)
 		KEY_TAB:
 			match cursorMode:
@@ -393,16 +393,19 @@ func receiveKey(key:InputEventKey) -> bool:
 								setNumber(endNumber, numberValues[endNumber]*10+character.to_int())
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberEnds[endNumber]))
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+								placeCursor()
 								return true
 							var startNumber:int = numberStarts.find(cursorStart)
 							if startNumber != -1:
 								setNumber(startNumber, character.to_int()*(10**len(str(numberValues[startNumber]))) + numberValues[startNumber])
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", cursorStart+1))
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+								placeCursor()
 								return true
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", cursorStart+1))
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
 						Changes.addChange(Changes.NumberEditTextChange.new(self, text.insert(cursorStart, character)))
+						placeCursor()
 					CURSOR_MODE.NUMBER:
 						var character:String = char(key.unicode)
 						if Editor.eventIs(key, &"numberTimesI"): pass
@@ -475,5 +478,7 @@ func numberCaptureCursor(fromPosition:int) -> void:
 			return
 
 func placeCursor() -> void:
+	cursorStart = clamp(cursorStart, 0, len(text))
+	cursorEnd = clamp(cursorEnd, 0, len(text))
 	%cursor.position.x = FNUMBEREDIT.get_string_size(text.substr(0,cursorStart)).x - 1
 	%cursor.size.x = FNUMBEREDIT.get_string_size(text.substr(0,cursorEnd)).x - %cursor.position.x + 1

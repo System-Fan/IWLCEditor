@@ -729,6 +729,7 @@ class NumberEditTextChange extends Change:
 		before = numberEdit.text
 		after = _after
 		do(parse)
+		if parse: numberEdit.evaluate()
 	
 	func do(parse:bool=true) -> void:
 		numberEdit.text = after

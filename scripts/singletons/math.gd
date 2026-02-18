@@ -47,6 +47,12 @@ var nI:PackedInt64Array:
 			SYSTEM.COMPLEX: return [0,-1]
 			SYSTEM.FRACTIONS, _: return [0,-1,1]
 
+var ERROR:PackedInt64Array:
+	get():
+		match system:
+			SYSTEM.COMPLEX: assert(false); return [0,0] # complex system does not have an error state
+			SYSTEM.FRACTIONS, _: return [0,0,0]
+
 # initialisers
 
 ## New number

@@ -48,7 +48,7 @@ func _ready() -> void:
 
 func setValue(value:PackedInt64Array) -> void:
 	text = M.str(value)
-	if text == "ERROR": text = "1/0"
+	if text == "ERROR": text = "0/0"
 	parseText(true)
 	buildText()
 

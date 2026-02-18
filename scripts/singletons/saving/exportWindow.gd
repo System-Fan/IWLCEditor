@@ -3,7 +3,6 @@ class_name ExportWindow
 
 enum EXPORT_TYPES {ROOM_GMX}
 
-@onready var editor:Editor = get_node("/root/editor")
 var path:String = ""
 var type:EXPORT_TYPES = EXPORT_TYPES.ROOM_GMX
 var fileExtension:String
@@ -12,14 +11,14 @@ var exporter:GDScript
 var interacted:PanelContainer
 
 func _ready() -> void:
-	editor.exportWindow = self
+	Game.editor.exportWindow = self
 	if OS.has_feature('web'):
 		%exportPathSetting.visible = false
 	_setType(type)
 	%roomIDEdit.context = self
 	%idIterStartEdit.context = self
-	%roomIDEdit.setValue(M.N(ExportRoomGMX.roomID), true)
-	%idIterStartEdit.setValue(M.N(ExportRoomGMX.idIterStart), true)
+	%roomIDEdit.setValue(M.N(ExportRoomGMX.roomID))
+	%idIterStartEdit.setValue(M.N(ExportRoomGMX.idIterStart))
 
 func _setType(index:int) -> void:
 	type = index as EXPORT_TYPES

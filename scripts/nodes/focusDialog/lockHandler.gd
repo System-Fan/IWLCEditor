@@ -40,7 +40,7 @@ func removeButton(index:int=selected,select:bool=true) -> void:
 func _select(button:Button) -> void:
 	if button is not LockHandlerButton: return
 	super(button)
-	if !manuallySetting: editor.focusDialog.focusComponent(door.locks[selected])
+	if !manuallySetting: Game.editor.focusDialog.focusComponent(door.locks[selected])
 
 class LockHandlerButton extends HandlerButton:
 	const ICONS:Array[Texture2D] = [

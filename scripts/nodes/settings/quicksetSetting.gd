@@ -29,8 +29,6 @@ func updateReset() -> void:
 	reset.disabled = self.matches == self.DEFAULT_MATCHES
 
 class QuicksetSettingButton extends Button:
-	@onready var editor:Editor = get_node("/root/editor")
-
 	var value:int
 	var quicksetSetting:QuicksetSetting
 

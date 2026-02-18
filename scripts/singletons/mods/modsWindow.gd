@@ -1,8 +1,6 @@
 extends Window
 class_name ModsWindow
 
-@onready var editor:Editor = get_node("/root/editor")
-
 enum STAGE {SELECT_MODS, FIND_PROBLEMS}
 var stage:STAGE = STAGE.SELECT_MODS
 
@@ -18,7 +16,7 @@ func _ready() -> void:
 	for mod in Mods.mods.values():
 		mod.tempActive = mod.active
 	%selectMods.setup()
-	editor.modsWindow = self
+	Game.editor.modsWindow = self
 
 func _input(event:InputEvent) -> void:
 	if event is InputEventKey and event.is_pressed():
@@ -52,7 +50,7 @@ func _saveChanges():
 	for mod in modsAdded: addMod(mod)
 	for mod in modsRemoved: removeMod(mod)
 
-	if !Mods.objectAvailable(editor.otherObjects.selected): editor.otherObjects.objectSelected(PlayerSpawn, true)
+	if !Mods.objectAvailable(Game.editor.otherObjects.selected): Game.editor.otherObjects.objectSelected(PlayerSpawn, true)
 	
 	var availableColors:Array[Game.COLOR] = Mods.colors()
 	for playerSpawn in Game.objects.values().filter(func(object): return object is PlayerSpawn):
@@ -63,7 +61,7 @@ func _saveChanges():
 			playerSpawn.resetColor(color)
 
 	Changes.bufferSave()
-	editor.grab_focus()
+	Game.editor.grab_focus()
 	Mods.bufferModsChanged()
 	queue_free()
 

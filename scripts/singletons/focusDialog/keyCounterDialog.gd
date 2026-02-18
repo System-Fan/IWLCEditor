@@ -1,7 +1,6 @@
 extends Control
 class_name KeyCounterDialog
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var main:FocusDialog = get_parent()
 
 func focus(focused:KeyCounter, new:bool, dontRedirect:bool) -> void:
@@ -21,7 +20,7 @@ func focusComponent(component:KeyCounterElement, _new:bool) -> void:
 
 func receiveKey(event:InputEvent) -> bool:
 	if Editor.eventIs(event, &"focusKeyCounterAddElement"): main.focused.addElement()
-	elif Editor.eventIs(event, &"quicksetColor"): editor.quickSet.startQuick(&"quicksetColor", main.componentFocused)
+	elif Editor.eventIs(event, &"quicksetColor"): Game.editor.quickSet.startQuick(&"quicksetColor", main.componentFocused)
 	elif Editor.eventIs(event, &"editDelete"):
 		if main.componentFocused and len(main.focused.elements) > 1:
 			main.focused.removeElement(main.componentFocused.index)

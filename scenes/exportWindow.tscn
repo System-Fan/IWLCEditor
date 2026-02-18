@@ -3,7 +3,7 @@
 [ext_resource type="Theme" uid="uid://bvfthh0vm4fbp" path="res://resources/uiTheme.tres" id="1_6sh78"]
 [ext_resource type="Script" uid="uid://bgpt7vesw7v6h" path="res://scripts/singletons/saving/exportWindow.gd" id="1_ctwya"]
 [ext_resource type="Texture2D" uid="uid://b1u516lw7onna" path="res://assets/ui/saving/changePath.png" id="3_t1gom"]
-[ext_resource type="PackedScene" uid="uid://sm362bc2r4fm" path="res://scenes/focusDialog/numberEdit.tscn" id="4_fimwu"]
+[ext_resource type="PackedScene" uid="uid://bkywonfg0bt0y" path="res://scenes/focusDialog/newNumberEdit.tscn" id="4_fimwu"]
 [ext_resource type="Texture2D" uid="uid://cpllfu67xbr0h" path="res://assets/ui/settings/clarifier.png" id="4_n1hb7"]
 
 [node name="exportWindow" type="Window" unique_id=895635370]
@@ -101,9 +101,10 @@ theme_override_constants/separation = 4
 layout_mode = 2
 text = "Room ID:"
 
-[node name="roomIDEdit" parent="c/c/c/roomGMX/c" unique_id=495238793 instance=ExtResource("4_fimwu")]
+[node name="roomIDEdit" parent="c/c/c/roomGMX/c" unique_id=231119399 instance=ExtResource("4_fimwu")]
 unique_name_in_owner = true
 layout_mode = 2
+type = 2
 
 [node name="clarifier" type="TextureRect" parent="c/c/c/roomGMX/c" unique_id=1156228869]
 layout_mode = 2
@@ -121,10 +122,10 @@ theme_override_constants/separation = 4
 layout_mode = 2
 text = "Tile ID Iterator:"
 
-[node name="idIterStartEdit" parent="c/c/c/roomGMX/c2" unique_id=1344148608 instance=ExtResource("4_fimwu")]
+[node name="idIterStartEdit" parent="c/c/c/roomGMX/c2" unique_id=1652895115 instance=ExtResource("4_fimwu")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+type = 2
 
 [node name="clarifier" type="TextureRect" parent="c/c/c/roomGMX/c2" unique_id=468702284]
 layout_mode = 2

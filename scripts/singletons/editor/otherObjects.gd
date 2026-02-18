@@ -1,7 +1,6 @@
 extends HBoxContainer
 class_name OtherObjects
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var objectSearch:LineEdit = %objectSearch
 
 var selected:GDScript = PlayerSpawn
@@ -9,7 +8,7 @@ var objects:Array[GDScript] = [Goal, KeyCounter, PlayerSpawn, FloatingTile, Remo
 var firstResult:GDScript
 
 func _searchFocused() -> void:
-	editor.focusDialog.defocus()
+	Game.editor.focusDialog.defocus()
 	await get_tree().process_frame
 	objectSearch.text = ""
 	_updateSearch()
@@ -44,11 +43,11 @@ func matchesSearch(object:GDScript, search:String) -> bool:
 func objectSelected(object:GDScript, quiet:bool=false) -> void:
 	%other.icon = object.SEARCH_ICON
 	selected = object
-	if !quiet: editor.modes.setMode(Editor.MODE.OTHER)
+	if !quiet: Game.editor.modes.setMode(Editor.MODE.OTHER)
 
 func _searchSubmitted() -> void:
 	if firstResult: objectSelected(firstResult)
-	editor.grab_focus()
+	Game.editor.grab_focus()
 
 func clearResults() -> void:
 	for result in %results.get_children():

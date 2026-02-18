@@ -7,8 +7,6 @@ class_name OutlineViewport
 # r covers g covers b
 # remember to make the shadermaterial unique
 
-@onready var editor:Editor = get_node("/root/editor")
-
 func createChild() -> RID:
 	var canvasItem:RID = RenderingServer.canvas_item_create()
 	RenderingServer.canvas_item_set_parent(canvasItem, %parent.get_canvas_item())
@@ -16,8 +14,8 @@ func createChild() -> RID:
 	return canvasItem
 
 func _process(_delta) -> void:
-	%camera.position = editor.editorCamera.position
-	%camera.zoom = editor.editorCamera.zoom
+	%camera.position = Game.editor.editorCamera.position
+	%camera.zoom = Game.editor.editorCamera.zoom
 
 
 func _resized():

@@ -41,6 +41,12 @@ enum TYPE {ALL, AXIAL, NONNEGATIVE_INTEGER}
 		if !allowZeroI: isZeroI = false
 @export var allowZero:bool = true
 
+var context:Node
+
+func _ready() -> void:
+	await Game.editor.ready
+	context = Game.editor.focusDialog
+
 func setValue(value:PackedInt64Array) -> void:
 	text = M.str(value)
 	parseText(true)

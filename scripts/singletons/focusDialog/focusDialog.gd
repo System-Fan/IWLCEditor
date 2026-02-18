@@ -1,7 +1,6 @@
 extends Control
 class_name FocusDialog
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var colorLink:Button = %colorLink
 
 @onready var keyDialog:KeyDialog = %keyDialog
@@ -49,7 +48,7 @@ func showCorrectDialog() -> void:
 func defocus() -> void:
 	if !focused: return
 	var object:GameObject = focused
-	editor.quickSet.applyOrCancel()
+	Game.editor.quickSet.applyOrCancel()
 	if object is Door and !Mods.active(&"ZeroCopies") and M.nex(object.copies): Changes.addChange(Changes.PropertyChange.new(object,&"copies",M.ONE))
 	focused = null
 	if object is RemoteLock: object.queue_redraw()
@@ -106,7 +105,7 @@ func interactLockLastEdit(index:int) -> void:
 	else: deinteract()
 
 func tabbed(numberEdit:PanelContainer) -> void:
-	editor.grab_focus()
+	Game.editor.grab_focus()
 	if Input.is_key_pressed(KEY_SHIFT):
 		match numberEdit.purpose:
 			NumberEdit.PURPOSE.IMAGINARY: interact(numberEdit.get_parent().realEdit)
@@ -183,12 +182,12 @@ func _process(_delta:float) -> void:
 		var halfWidth:float = activeDialog.get_child(0).size.x/2
 		activeDialog.get_child(0).position = Vector2(-halfWidth,0)
 		var height:float = activeDialog.get_child(0).size.y
-		position = editor.worldspaceToScreenspace(focused.getDrawPosition() + Vector2(focused.size.x/2,focused.size.y)) + Vector2(0,OBJECT_MARGIN)
+		position = Game.editor.worldspaceToScreenspace(focused.getDrawPosition() + Vector2(focused.size.x/2,focused.size.y)) + Vector2(0,OBJECT_MARGIN)
 		
-		if above and position.y - height - 2*OBJECT_MARGIN - focused.size.y*editor.cameraZoom < editor.gameCont.position.y + EDGE_MARGIN: flip = true
-		elif !above and position.y + height > editor.gameCont.position.y + editor.gameCont.size.y - EDGE_MARGIN: flip = true
+		if above and position.y - height - 2*OBJECT_MARGIN - focused.size.y*Game.editor.cameraZoom < Game.editor.gameCont.position.y + EDGE_MARGIN: flip = true
+		elif !above and position.y + height > Game.editor.gameCont.position.y + Game.editor.gameCont.size.y - EDGE_MARGIN: flip = true
 
-		if above != flip: position = editor.worldspaceToScreenspace(focused.getDrawPosition() + Vector2(focused.size.x/2,0)) + Vector2(0,-OBJECT_MARGIN)
+		if above != flip: position = Game.editor.worldspaceToScreenspace(focused.getDrawPosition() + Vector2(focused.size.x/2,0)) + Vector2(0,-OBJECT_MARGIN)
 		%speechBubbler.rotation_degrees = 0 if above != flip else 180
 		if flip != above: activeDialog.get_child(0).position.y = -height
 		else: activeDialog.get_child(0).position.y = 0
@@ -199,12 +198,12 @@ func _process(_delta:float) -> void:
 		if position.x < halfWidth + EDGE_MARGIN:
 			%speechBubbler.position.x = max(position.x-halfWidth-EDGE_MARGIN,SPEECH_BUBBLER_MARGIN-speechBubblerRange)
 			position.x = halfWidth + EDGE_MARGIN
-		if position.x + halfWidth + EDGE_MARGIN > editor.gameCont.size.x:
-			%speechBubbler.position.x = min(position.x+halfWidth-editor.gameCont.size.x+EDGE_MARGIN,speechBubblerRange-SPEECH_BUBBLER_MARGIN)
-			position.x = editor.gameCont.size.x - halfWidth - EDGE_MARGIN
+		if position.x + halfWidth + EDGE_MARGIN > Game.editor.gameCont.size.x:
+			%speechBubbler.position.x = min(position.x+halfWidth-Game.editor.gameCont.size.x+EDGE_MARGIN,speechBubblerRange-SPEECH_BUBBLER_MARGIN)
+			position.x = Game.editor.gameCont.size.x - halfWidth - EDGE_MARGIN
 		
-		if above != flip: position.y = min(position.y, editor.gameCont.position.y + editor.gameCont.size.y - SPEECH_BUBBLER_MARGIN)
-		else: position.y = max(position.y, editor.gameCont.position.y + SPEECH_BUBBLER_MARGIN)
+		if above != flip: position.y = min(position.y, Game.editor.gameCont.position.y + Game.editor.gameCont.size.y - SPEECH_BUBBLER_MARGIN)
+		else: position.y = max(position.y, Game.editor.gameCont.position.y + SPEECH_BUBBLER_MARGIN)
 	else:
 		visible = false
 

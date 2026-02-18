@@ -1,7 +1,6 @@
 extends Control
 class_name PlayerDialog
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var main:FocusDialog = get_parent()
 
 var color:Game.COLOR
@@ -47,7 +46,7 @@ func receiveKey(event:InputEvent) -> bool:
 	elif Editor.eventIs(event, &"focusPlayerStar") and %playerStateSettings.visible: _playerStarSet(!%playerStar.button_pressed)
 	elif Editor.eventIs(event, &"focusPlayerCurse") and %playerStateSettings.visible and %playerCurse.visible: _playerCurseSet(!%playerCurse.button_pressed)
 	elif Editor.eventIs(event, &"focusPlayerSavestate") and %playerSettings.visible: _leaveSavestate()
-	elif Editor.eventIs(event, &"quicksetColor") and %playerStateSettings.visible: editor.quickSet.startQuick(&"quicksetColor", main.focused)
+	elif Editor.eventIs(event, &"quicksetColor") and %playerStateSettings.visible: Game.editor.quickSet.startQuick(&"quicksetColor", main.focused)
 	else: return false
 	return true
 

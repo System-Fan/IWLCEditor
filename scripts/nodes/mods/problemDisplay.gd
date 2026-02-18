@@ -1,7 +1,6 @@
 extends VBoxContainer
 class_name ProblemDisplay
 
-@onready var editor:Editor = get_node("/root/editor")
 var modId:StringName
 var mod:Mods.Mod
 var type:StringName
@@ -56,10 +55,10 @@ func showInstance(index:int) -> void:
 	setTexts()
 	var component:GameComponent = mod.problems[type][index]
 	if component is GameObject:
-		editor.focusDialog.defocusComponent()
-		editor.focusDialog.focus(component,true)
-	else: editor.focusDialog.focusComponent(component)
-	editor.scrollIntoView(component)
+		Game.editor.focusDialog.defocusComponent()
+		Game.editor.focusDialog.focus(component,true)
+	else: Game.editor.focusDialog.focusComponent(component)
+	Game.editor.scrollIntoView(component)
 
 func _showPressed():
 	%shower.visible = true

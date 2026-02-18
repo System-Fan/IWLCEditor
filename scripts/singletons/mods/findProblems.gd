@@ -1,7 +1,6 @@
 extends PanelContainer
 class_name FindProblems
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var modsWindow:ModsWindow = get_parent()
 @onready var problemsLabel:Label = %problemsLabel
 var buttonGroup:ButtonGroup = ButtonGroup.new()
@@ -24,7 +23,7 @@ func _ready() -> void:
 
 func setup() -> void:
 	isReady = false
-	editor.findProblems = self
+	Game.editor.findProblems = self
 	firstButton = true
 	problems = 0
 	for child in %modsAdded.get_children(): child.queue_free()

@@ -28,7 +28,7 @@ func removeButton(index:int=selected,select:bool=true) -> void:
 
 func _select(button:Button) -> void:
 	super(button)
-	if !manuallySetting: editor.focusDialog.focusComponent(keyCounter.elements[selected])
+	if !manuallySetting: Game.editor.focusDialog.focusComponent(keyCounter.elements[selected])
 
 func deselect() -> void:
 	if selected == -1: return

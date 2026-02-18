@@ -1,7 +1,6 @@
 extends Control
 class_name GoalDialog
 
-@onready var editor:Editor = get_node("/root/editor")
 @onready var main:FocusDialog = get_parent()
 
 func focus(focused:Goal, _new:bool, _dontRedirect:bool) -> void:

@@ -2,8 +2,6 @@ extends Button
 
 const GATE_FILL:Texture2D = preload('res://assets/ui/focusDialog/lockHandler/spendGate.png')
 
-@onready var editor:Editor = get_node("/root/editor")
-
 var drawMain:RID
 
 func _ready() -> void:
@@ -13,7 +11,7 @@ func _ready() -> void:
 	Game.connect(&"goldIndexChanged",queue_redraw)
 
 func _draw() -> void:
-	var door:GameObject = editor.focusDialog.focused
+	var door:GameObject = Game.editor.focusDialog.focused
 	RenderingServer.canvas_item_clear(drawMain)
 	if door is not Door: return
 	var rect:Rect2 = Rect2(position+Vector2.ONE, size-Vector2(2,2))

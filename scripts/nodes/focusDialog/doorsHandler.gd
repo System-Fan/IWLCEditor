@@ -19,13 +19,13 @@ func setup(_remoteLock:RemoteLock) -> void:
 static func buttonType() -> GDScript: return DoorsHandlerButton
 
 func addComponent() -> void:
-	editor.connectionSource = remoteLock
-	editor.focusDialog.defocus()
+	Game.editor.connectionSource = remoteLock
+	Game.editor.focusDialog.defocus()
 
 func removeComponent() -> void: remoteLock._disconnectTo(buttons[selected].door)
 
 func _select(button:Button) -> void:
-	if selected == button.index: editor.focusDialog.focus(button.door)
+	if selected == button.index: Game.editor.focusDialog.focus(button.door)
 	else: super(button)
 	remoteLock.queue_redraw()
 

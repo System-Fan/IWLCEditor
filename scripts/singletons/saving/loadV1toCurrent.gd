@@ -1,5 +1,5 @@
 extends Node
-class_name LoadV1to2
+class_name LoadV1toCurrent
 
 static var COMPONENTS:Array[GDScript] = [Lock, KeyCounterElement, KeyBulk, Door, Goal, KeyCounter, PlayerSpawn, FloatingTile, RemoteLock]
 static var NON_OBJECT_COMPONENTS:Array[GDScript] = [Lock, KeyCounterElement]
@@ -75,6 +75,9 @@ static func loadFile(file:FileAccess, formatVersion:int) -> void:
 	if formatVersion > 1:
 		PROPERTIES.get(KeyBulk).insert(7, &"glistening")
 		ARRAYS.get(PlayerSpawn)[&"glisten"] = TYPE_PACKED_INT64_ARRAY
+	# format version 3 is v1.1.0
+	if formatVersion > 2:
+		PROPERTIES.get(KeyBulk).append(&"operation")
 	# LEVEL DATA
 	# tiles
 	Game.tiles.tile_map_data = file.get_var()

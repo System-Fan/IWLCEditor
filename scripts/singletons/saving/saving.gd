@@ -9,7 +9,7 @@ var confirmAction:ACTION
 
 var jsCallback:JavaScriptObject
 
-const FILE_FORMAT_VERSION:int = 2
+const FILE_FORMAT_VERSION:int = 3
 
 # Okay.
 # Here's how we'll do it
@@ -238,7 +238,7 @@ func loadFile(path:String, immediate:bool=false) -> OpenWindow:
 		openWindow.queue_free()
 		if formatVersion == 0: errorPopup("File version 0 is unrecognised")
 		return null
-	elif formatVersion <= 2: openWindow.loader = LoadV1to2
+	elif formatVersion <= FILE_FORMAT_VERSION: openWindow.loader = LoadV1toCurrent
 	else:
 		openWindow.queue_free()
 		errorPopup("File version %s is unrecognised. File last opened in IWLCEditor v%s" % [formatVersion, editorVersion])

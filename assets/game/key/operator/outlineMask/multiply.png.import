@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://uwtrhb2ksecy"
-path="res://.godot/imported/outlineMask.png-a81496986105c91bf9cc075a42694ed2.ctex"
+uid="uid://5kxqt3q76i7d"
+path="res://.godot/imported/multiply.png-7d60c571a1d04a4453dbb7480ab8ad16.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/game/key/operator/outlineMask.png"
-dest_files=["res://.godot/imported/outlineMask.png-a81496986105c91bf9cc075a42694ed2.ctex"]
+source_file="res://assets/game/key/operator/outlineMask/multiply.png"
+dest_files=["res://.godot/imported/multiply.png-7d60c571a1d04a4453dbb7480ab8ad16.ctex"]
 
 [params]
 

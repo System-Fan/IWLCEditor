@@ -26,6 +26,8 @@ static var OPERATOR_FRAME:OperatorTextureLoader = OperatorTextureLoader.new("res
 static var OPERATOR_FILL:OperatorTextureLoader = OperatorTextureLoader.new("res://assets/game/key/operator/fill/$t.png")
 static var OPERATOR_FRAME_GLITCH:OperatorTextureLoader = OperatorTextureLoader.new("res://assets/game/key/operator/frameGlitch/$t.png")
 static var OPERATOR_FILL_GLITCH:OperatorTextureLoader = OperatorTextureLoader.new("res://assets/game/key/operator/fillGlitch/$t.png") 
+static var OPERATOR_OUTLINE_MASK:OperatorTextureLoader = OperatorTextureLoader.new("res://assets/game/key/operator/outlineMask/$t.png") 
+
 const CURSE_FILL_DARK:Texture2D = preload("res://assets/game/key/curse/fillDark.png")
 
 const NULL_ROTOR_SYMBOL:Texture2D = preload("res://assets/game/key/symbols/null.png")
@@ -52,7 +54,7 @@ const CREATE_PARAMETERS:Array[StringName] = [
 ]
 const PROPERTIES:Array[StringName] = [
 	&"id", &"position", &"size",
-	&"color", &"type", &"count", &"infinite", &"glistening", &"un", &"altColor", &"mode"
+	&"color", &"type", &"count", &"infinite", &"glistening", &"un", &"altColor", &"operation"
 ]								
 static var ARRAYS:Dictionary[StringName,Variant] = {}
 
@@ -62,7 +64,7 @@ var count:PackedInt64Array = M.ONE
 var infinite:int = 0
 var glistening:bool = false # whether the key affects glistening count or not
 var altColor:Game.COLOR = Game.COLOR.WHITE
-var mode:OPERATION = OPERATION.SET
+var operation:OPERATION = OPERATION.SET
 var un:bool = false # whether a star or curse key is an unstar or uncurse key
 var reciprocal:bool = false # whether a rotor key is reciprocal or not
 
@@ -103,9 +105,9 @@ func _freed() -> void:
 func convertNumbers(from:M.SYSTEM) -> void:
 	Changes.addChange(Changes.ComponentConvertNumberChange.new(self, from, &"count"))
 
-func outlineTex() -> Texture2D: return getOutlineTexture(color, type, un)
+func outlineTex() -> Texture2D: return getOutlineTexture(color, type, un, operation)
 
-static func getOutlineTexture(keyColor:Game.COLOR, keyType:TYPE=TYPE.NORMAL, keyUn:bool=false) -> Texture2D:
+static func getOutlineTexture(keyColor:Game.COLOR, keyType:TYPE=TYPE.NORMAL, keyUn:bool=false, keyOperation:OPERATION=OPERATION.SET) -> Texture2D:
 	var textureType:KeyTextureLoader.TYPE = keyTextureType(keyType,keyUn)
 	match keyColor:
 		Game.COLOR.MASTER:
@@ -116,6 +118,7 @@ static func getOutlineTexture(keyColor:Game.COLOR, keyType:TYPE=TYPE.NORMAL, key
 			return QUICKSILVER_OUTLINE_MASK.current([textureType])
 		Game.COLOR.DYNAMITE:
 			if textureType == KeyTextureLoader.TYPE.NORMAL: return preload("res://assets/game/key/dynamite/outlineMask.png")
+	if textureType == KeyTextureLoader.TYPE.OPERATOR: return OPERATOR_OUTLINE_MASK.current([keyOperation])
 	return OUTLINE_MASK.current([textureType])
 
 func _draw() -> void:
@@ -144,7 +147,7 @@ func _draw() -> void:
 				elif M.eq(count, M.I): RenderingServer.canvas_item_add_texture_rect(drawSymbol,rect,POSROTOR_SYMBOL)
 				elif M.eq(count, M.nI): RenderingServer.canvas_item_add_texture_rect(drawSymbol,rect,NEGROTOR_SYMBOL)
 		KeyBulk.TYPE.OPERATOR:
-			drawOperationSymbol(drawAdditional,drawAdditionalGlitch,Vector2.ZERO,altColor,mode,glitchMimic)
+			drawOperationSymbol(drawAdditional,drawAdditionalGlitch,Vector2.ZERO,altColor,operation,glitchMimic)
 	if infinite:
 		if glistening:
 			RenderingServer.canvas_item_add_texture_rect(drawSymbol,Rect2(Vector2(MULTITYPEOFFSET,-MULTITYPEOFFSET), size),INFINITE_SYMBOL)
@@ -259,7 +262,7 @@ func collect(player:Player) -> void:
 				if reciprocal: player.changeGlisten(collectColor, M.divide(count,player.glisten[collectColor]))
 				else: player.changeGlisten(collectColor, M.times(player.glisten[collectColor], count))
 			TYPE.OPERATOR:
-				match mode:
+				match operation:
 					OPERATION.SET: player.changeGlisten(collectColor, player.glisten[collectAltColor])
 					OPERATION.ADD: player.changeGlisten(collectColor, M.add(player.glisten[collectColor], player.glisten[collectAltColor]))
 					OPERATION.SUBTRACT: player.changeGlisten(collectColor, M.sub(player.glisten[collectColor], player.glisten[collectAltColor]))
@@ -276,7 +279,7 @@ func collect(player:Player) -> void:
 		TYPE.STAR: GameChanges.addChange(GameChanges.StarChange.new(collectColor, !un))
 		TYPE.CURSE: GameChanges.addChange(GameChanges.CurseChange.new(collectColor, !un))
 		TYPE.OPERATOR:
-			match mode:
+			match operation:
 				OPERATION.SET: player.changeKeys(collectColor, player.key[collectAltColor])
 				OPERATION.ADD: player.changeKeys(collectColor, M.add(player.key[collectColor], player.key[collectAltColor]))
 				OPERATION.SUBTRACT: player.changeKeys(collectColor, M.sub(player.key[collectColor], player.key[collectAltColor]))

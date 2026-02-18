@@ -17,7 +17,7 @@ func focus(focused:KeyBulk, _new:bool, _dontRedirect:bool) -> void:
 	%keyInfiniteToggle.button_pressed = focused.infinite
 	%keyGlisteningToggle.button_pressed = focused.glistening
 	%keyOperationSelector.visible = focused.type == KeyBulk.TYPE.OPERATOR
-	%keyOperationSelector.setSelect(focused.mode)
+	%keyOperationSelector.setSelect(focused.operation)
 	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and (focused.infinite or main.interacted == %keyPartialInfiniteEdit)
 	%keyPartialInfiniteEdit.setValue(M.N(focused.infinite), true)
 	%keyRotorSelector.visible = focused.type == KeyBulk.TYPE.ROTOR
@@ -80,9 +80,9 @@ func _keyTypeSelected(type:KeyBulk.TYPE) -> void:
 	if beforeType != type and type == KeyBulk.TYPE.ROTOR: Changes.PropertyChange.new(main.focused,&"count",M.nONE)
 	Changes.bufferSave()
 
-func _keyOperationSelected(mode:KeyBulk.OPERATION) -> void:
+func _keyOperationSelected(operation:KeyBulk.OPERATION) -> void:
 	if main.focused is not KeyBulk: return
-	Changes.addChange(Changes.PropertyChange.new(main.focused,&"mode",mode))
+	Changes.addChange(Changes.PropertyChange.new(main.focused,&"operation",operation))
 	Changes.bufferSave()
 
 func _keyCountSet(count:PackedInt64Array) -> void:

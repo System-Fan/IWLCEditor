@@ -81,7 +81,6 @@ func interact(edit:NewNumberEdit) -> void:
 func deinteract() -> void:
 	if !interacted: return
 	interacted.deinteract()
-	if activeDialog: activeDialog.editDeinteracted(interacted)
 	interacted = null
 
 func interactDoorFirstEdit() -> void:

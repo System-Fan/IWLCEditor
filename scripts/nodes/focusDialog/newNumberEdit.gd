@@ -49,6 +49,7 @@ func _ready() -> void:
 
 func setValue(value:PackedInt64Array) -> void:
 	text = M.str(value)
+	if text == "ERROR": text = "1/0"
 	parseText(true)
 	buildText()
 
@@ -114,7 +115,7 @@ func parseText(manual:bool=false) -> void:
 					tokens.append(Vector2i(TOKEN.LBRACKET, 0))
 				"+": tokens.append(Vector2i(TOKEN.CROSS, 0))
 				"-": tokens.append(Vector2i(TOKEN.DASH, 0))
-				"x": tokens.append(Vector2i(TOKEN.X, 0))
+				"x", "*": tokens.append(Vector2i(TOKEN.X, 0))
 				"/": tokens.append(Vector2i(TOKEN.SLASH, 0))
 				"i": tokens.append(Vector2i(TOKEN.I, 0))
 				_:
@@ -351,16 +352,14 @@ func receiveKey(key:InputEventKey) -> bool:
 					changeNumber(cursorSelectedNumber, -1)
 					numberCaptureCursor(cursorStart)
 		KEY_TAB:
-			match cursorMode:
-				_:
-					if Input.is_key_pressed(KEY_SHIFT):
-						if cursorSelectedNumber == 0: return false
-						for number in range(numbers,0,-1): if numberStarts[number-1] < cursorStart:
-							numberCaptureCursor(numberStarts[number-1]); break
-					else:
-						if cursorSelectedNumber == numbers: return false
-						for number in numbers: if numberEnds[number] > cursorEnd:
-							numberCaptureCursor(numberStarts[number]); break
+			if Input.is_key_pressed(KEY_SHIFT):
+				if cursorMode == CURSOR_MODE.NUMBER and cursorSelectedNumber == 0: return false
+				for number in range(numbers,0,-1): if numberStarts[number-1] < cursorStart:
+					numberCaptureCursor(numberStarts[number-1]); break
+			else:
+				if cursorMode == CURSOR_MODE.NUMBER and cursorSelectedNumber == numbers-1: return false
+				for number in numbers: if numberEnds[number] > cursorEnd:
+					numberCaptureCursor(numberStarts[number]); break
 		KEY_A:
 			if Input.is_key_pressed(KEY_CTRL):
 				selectAll()
@@ -391,6 +390,7 @@ func receiveKey(key:InputEventKey) -> bool:
 				match cursorMode:
 					CURSOR_MODE.NORMAL:
 						var character:String = char(key.unicode)
+						if !"1234567890-+()*x/i".contains(character): return false
 						if cursorEnd > cursorStart:
 							Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, cursorEnd - cursorStart), false))
 						elif "0123456789".contains(character):
@@ -408,9 +408,9 @@ func receiveKey(key:InputEventKey) -> bool:
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
 								placeCursor()
 								return true
+						Changes.addChange(Changes.NumberEditTextChange.new(self, text.insert(cursorStart, character)))
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", cursorStart+1))
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
-						Changes.addChange(Changes.NumberEditTextChange.new(self, text.insert(cursorStart, character)))
 						placeCursor()
 					CURSOR_MODE.NUMBER:
 						var character:String = char(key.unicode)
@@ -420,7 +420,10 @@ func receiveKey(key:InputEventKey) -> bool:
 							numberCaptureCursor(cursorStart)
 						elif "0123456789".contains(character):
 							setNumber(cursorSelectedNumber, character.to_int())
-							numberCaptureCursor(cursorStart)
+							Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberEnds[cursorSelectedNumber]))
+							Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+							cursorMode = CURSOR_MODE.NORMAL
+							placeCursor()
 						else: return false
 			else: return false
 	return true

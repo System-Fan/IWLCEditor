@@ -23,7 +23,6 @@
 [ext_resource type="Texture2D" uid="uid://blvji7kl64sbd" path="res://assets/ui/focusDialog/lockHandler/colorLink.png" id="17_5vlab"]
 [ext_resource type="Script" uid="uid://c71qe58ht0isn" path="res://scripts/nodes/focusDialog/configurationSelector.gd" id="17_cu8b0"]
 [ext_resource type="Texture2D" uid="uid://cc64xnxuowxqi" path="res://assets/game/door/aura/frozen1x1.png" id="19_vn3na"]
-[ext_resource type="PackedScene" uid="uid://sm362bc2r4fm" path="res://scenes/focusDialog/numberEdit.tscn" id="20_gx4cd"]
 [ext_resource type="Texture2D" uid="uid://cpqsyj5t7vigm" path="res://assets/game/door/aura/crumbled1x1.png" id="20_vn3na"]
 [ext_resource type="Texture2D" uid="uid://bar7rrr1p3a1h" path="res://assets/ui/focusDialog/lockBooleans/negated.png" id="21_bfxh1"]
 [ext_resource type="Texture2D" uid="uid://dy8u44tdg6vrv" path="res://assets/game/door/aura/painted1x1.png" id="21_drywk"]
@@ -39,6 +38,7 @@
 [ext_resource type="Script" uid="uid://bg8oswa2bhdsv" path="res://scripts/nodes/focusDialog/goalTypeSelector.gd" id="26_1rcup"]
 [ext_resource type="Texture2D" uid="uid://cln0osp8um3ti" path="res://assets/ui/focusDialog/numberEdit/partialBlast.png" id="29_di8ev"]
 [ext_resource type="Script" uid="uid://dihumic7k5rec" path="res://scripts/singletons/focusDialog/keyCounterDialog.gd" id="30_bfxh1"]
+[ext_resource type="Texture2D" uid="uid://wdnkcen713o8" path="res://assets/ui/focusDialog/numberEdit/x.png" id="31_rrq8c"]
 [ext_resource type="Script" uid="uid://2iqmgcrc5wpq" path="res://scripts/nodes/focusDialog/doorsHandler.gd" id="31_xwnfa"]
 [ext_resource type="Script" uid="uid://b0shfyjnfk7ih" path="res://scripts/singletons/focusDialog/goalDialog.gd" id="33_di8ev"]
 [ext_resource type="Texture2D" uid="uid://cv1qa4bwwetr5" path="res://assets/ui/focusDialog/numberEdit/parenthesis.png" id="38_lm5cw"]
@@ -224,10 +224,12 @@ layout_mode = 2
 texture = ExtResource("8_16i1m")
 expand_mode = 3
 
-[node name="keyPartialInfiniteEdit" parent="keyDialog/c/c/c/c/keyPartialInfinite" unique_id=1703551654 instance=ExtResource("20_gx4cd")]
+[node name="keyPartialInfiniteEdit" parent="keyDialog/c/c/c/c/keyPartialInfinite" unique_id=231119399 instance=ExtResource("15_rrq8c")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 0)
+custom_minimum_size = Vector2(40, 18)
 layout_mode = 2
+type = 2
+allowZero = false
 
 [node name="keyGlisteningToggle" type="Button" parent="keyDialog/c/c/c/c" unique_id=1657225081 groups=["explained"]]
 unique_name_in_owner = true
@@ -237,7 +239,7 @@ toggle_mode = true
 icon = ExtResource("10_vapyv")
 metadata/explanation = SubResource("Resource_hdjws")
 
-[node name="keyCountEdit" parent="keyDialog/c/c/c" unique_id=231119399 instance=ExtResource("15_rrq8c")]
+[node name="keyCountEdit" parent="keyDialog/c/c/c" unique_id=1393964115 instance=ExtResource("15_rrq8c")]
 unique_name_in_owner = true
 layout_mode = 2
 
@@ -447,6 +449,11 @@ metadata/explanation = SubResource("Resource_16i1m")
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
+
+[node name="x" type="TextureRect" parent="doorDialog/c/lock/c/c/doorCopySettings" unique_id=1284241333]
+layout_mode = 2
+texture = ExtResource("31_rrq8c")
+stretch_mode = 3
 
 [node name="realInfiniteCopy" type="Button" parent="doorDialog/c/lock/c/c/doorCopySettings" unique_id=826471876]
 unique_name_in_owner = true

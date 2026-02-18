@@ -153,8 +153,6 @@ func changedMods() -> void:
 	if main.componentFocused is Lock and main.componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL]:
 		main.focusComponent(main.componentFocused)
 
-func editDeinteracted(_edit) -> void: pass
-
 func _doorColorSelected(color:Game.COLOR) -> void:
 	if main.focused is not Door and main.focused is not RemoteLock: return
 	if main.focused is Door:

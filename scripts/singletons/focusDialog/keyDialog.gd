@@ -13,8 +13,8 @@ func focus(focused:KeyBulk, new:bool, _dontRedirect:bool) -> void:
 	if new: %keyCountEdit.setValue(focused.count)
 	%keyInfiniteToggle.button_pressed = focused.infinite
 	%keyGlisteningToggle.button_pressed = focused.glistening
-	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and (focused.infinite or main.interacted == %keyPartialInfiniteEdit)
-	%keyPartialInfiniteEdit.setValue(M.N(focused.infinite), true)
+	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and focused.infinite
+	if new: %keyPartialInfiniteEdit.setValue(M.N(focused.infinite))
 	%keyRotorSelector.visible = focused.type == KeyBulk.TYPE.ROTOR
 	%keyUn.visible = focused.type in [KeyBulk.TYPE.STAR, KeyBulk.TYPE.CURSE]
 	%keyUn.button_pressed = !focused.un
@@ -46,10 +46,6 @@ func receiveKey(event:InputEventKey) -> bool:
 	elif Editor.eventIs(event, &"quicksetColor"): Game.editor.quickSet.startQuick(&"quicksetColor", main.focused)
 	else: return false
 	return true
-
-func editDeinteracted(edit:PanelContainer) -> void:
-	if main.focused is not KeyBulk: return
-	if edit == %keyPartialInfiniteEdit and !main.focused.infinite: %keyPartialInfinite.visible = false
 
 func changedMods() -> void:
 	%keyGlisteningToggle.visible = Mods.active(&"Glistening")

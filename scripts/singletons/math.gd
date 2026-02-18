@@ -132,7 +132,10 @@ func across(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
 ## truncates if fractions are unrepresentable
 func divide(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
 	match system:
-		@warning_ignore("integer_division") SYSTEM.COMPLEX: return [(a[0]*b[0]+a[1]*b[1])/(b[0]*b[0]+b[1]*b[1]), (a[1]*b[0]-a[0]*b[1])/(b[0]*b[0]+b[1]*b[1])]
+		SYSTEM.COMPLEX:
+			if nex(b): return ZERO
+			@warning_ignore("integer_division")
+			return [(a[0]*b[0]+a[1]*b[1])/(b[0]*b[0]+b[1]*b[1]), (a[1]*b[0]-a[0]*b[1])/(b[0]*b[0]+b[1]*b[1])]
 		SYSTEM.FRACTIONS, _: return simplify([(a[0]*b[0]+a[1]*b[1])*b[2], (a[1]*b[0]-a[0]*b[1])*b[2], (b[0]*b[0]+b[1]*b[1])*a[2]])
 
 ## (a,b -> floor(a / b))
@@ -144,12 +147,14 @@ func floorDivide(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
 ## (a,b -> a % b)
 ## has the sign of a (-5 % 3 = -2)
 func modulo(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
+	if nex(b): return ZERO
 	return sub(a,times(trunc(divide(a,b)),b))
 
 ## (a,b -> (a % b + b) % b)
 ## has the sign of b (remainder(-5, 3) = 1)
 ## also known as posmod
 func remainder(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
+	if nex(b): return ZERO
 	return sub(a,times(floorDivide(a,b),b))
 
 ## a "along" the axes of b
@@ -224,6 +229,12 @@ func inumer(n:PackedInt64Array) -> PackedInt64Array:
 	match system:
 		SYSTEM.COMPLEX: return [0, n[1]]
 		SYSTEM.FRACTIONS, _: return [0, n[1], 1]
+
+## (n -> ir(n)*denom(n))
+func irnumer(n:PackedInt64Array) -> PackedInt64Array:
+	match system:
+		SYSTEM.COMPLEX: return [n[1], 0]
+		SYSTEM.FRACTIONS, _: return [n[1], 0, 1]
 
 ## (n -> r(n)*denom(n))
 func numer(n:PackedInt64Array) -> PackedInt64Array:
@@ -432,18 +443,14 @@ func toIpow(n:PackedInt64Array) -> int:
 func toInt(n:PackedInt64Array) -> int:
 	return n[0]
 
-# so apparently thats wrong
-func imaginaryPartToInt(n:PackedInt64Array) -> int:
-	return n[1]
-
 func str(n:PackedInt64Array) -> String:
 	return strWithInf(n,ZERO)
 
 func strWithInf(n:PackedInt64Array,infAxes:PackedInt64Array) -> String:
 	var rComponent:String
 	var iComponent:String = ""
-	var rnum = toInt(n)
-	var inum = imaginaryPartToInt(n)
+	var rnum = toInt(rnumer(n))
+	var inum = toInt(irnumer(n))
 	if infAxes[0]: rComponent = "-~" if rnum < 0 else "~"
 	elif rnum: rComponent = str(rnum)
 	if inum:
@@ -454,8 +461,10 @@ func strWithInf(n:PackedInt64Array,infAxes:PackedInt64Array) -> String:
 		var den:int = toInt(denom(n))
 		if den == 0: return "ERROR"
 		if den != 1:
-			rComponent = "(" + rComponent
-			iComponent += ")/" + str(den)
+			if isComplex(n):
+				rComponent = "(" + rComponent
+				iComponent += ")"
+			iComponent += "/" + str(den)
 	if !rnum and !inum: return "0"
 	return rComponent + iComponent
 

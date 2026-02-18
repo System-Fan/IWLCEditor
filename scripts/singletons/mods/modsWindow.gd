@@ -40,6 +40,7 @@ func _back():
 
 func _saveChanges():
 	if Game.playState != Game.PLAY_STATE.EDIT: Game.stopTest()
+	Game.editor.focusDialog.defocus()
 	Changes.addChange(Changes.GlobalPropertyChange.new(Mods,&"activeModpack",tempActiveModpack))
 	Changes.addChange(Changes.GlobalPropertyChange.new(Mods,&"activeVersion",tempActiveVersion))
 	for mod in Mods.mods.values():

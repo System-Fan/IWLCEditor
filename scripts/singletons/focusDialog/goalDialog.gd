@@ -13,5 +13,3 @@ func _goalTypeSelected(type:Goal.TYPE) -> void:
 
 func receiveKey(_event:InputEventKey) -> bool:
 	return false
-
-func editDeinteracted(_edit) -> void: pass

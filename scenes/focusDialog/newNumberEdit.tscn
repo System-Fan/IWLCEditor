@@ -8,6 +8,7 @@
 custom_minimum_size = Vector2(70, 18)
 offset_right = 70.0
 offset_bottom = 18.0
+size_flags_horizontal = 3
 theme = ExtResource("1_0nn8k")
 theme_type_variation = &"NumberEditPanelContainer"
 script = ExtResource("2_ttqea")

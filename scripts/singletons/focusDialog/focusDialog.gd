@@ -15,6 +15,7 @@ var focused:GameObject # the object that is currently focused
 var componentFocused:GameComponent # you can focus both a door and a lock at the same time so
 var interacted:NewNumberEdit # the number edit that is currently interacted
 var activeDialog:Control
+var bufferFocus:GameComponent
 
 var above:bool = false # display above the object instead
 
@@ -168,6 +169,10 @@ const OBJECT_MARGIN:float = 16 # between the dialog and the object; where the sp
 const SPEECH_BUBBLER_MARGIN:float = 10 # between speech bubbler and edge of dialog
 
 func _process(_delta:float) -> void:
+	if bufferFocus:
+		if bufferFocus is GameObject: focus(bufferFocus)
+		else: focusComponent(bufferFocus)
+		bufferFocus = null
 	if focused and activeDialog:
 		visible = true
 		# position the dialog every frame (could be optimised but i dont care)

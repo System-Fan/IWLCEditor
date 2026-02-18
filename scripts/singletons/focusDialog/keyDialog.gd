@@ -11,7 +11,7 @@ func focus(focused:KeyBulk, new:bool, _dontRedirect:bool) -> void:
 	%keyColorSelector.setSelect(focused.color)
 	%keyTypeSelector.setSelect(focused.type)
 	%keyCountEdit.visible = focused.type in [KeyBulk.TYPE.NORMAL,KeyBulk.TYPE.EXACT]
-	%keyCountEdit.setValue(focused.count, new)
+	if new: %keyCountEdit.setValue(focused.count)
 	%keyInfiniteToggle.button_pressed = focused.infinite
 	%keyGlisteningToggle.button_pressed = focused.glistening
 	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and (focused.infinite or main.interacted == %keyPartialInfiniteEdit)

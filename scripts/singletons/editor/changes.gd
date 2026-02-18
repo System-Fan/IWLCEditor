@@ -334,8 +334,7 @@ class PropertyChange extends Change:
 		else: component.set(property, value)
 		component.propertyChangedDo(property)
 		component.queue_redraw()
-		if Game.editor.focusDialog.focused == component: Game.editor.focusDialog.focus(component)
-		elif Game.editor.focusDialog.componentFocused == component: Game.editor.focusDialog.focusComponent(component)
+		if Game.editor.focusDialog.focused == component or Game.editor.focusDialog.componentFocused == component: Game.editor.focusDialog.bufferFocus = component
 		if Game.editor.findProblems: Game.editor.findProblems.findProblems(component)
 	
 	func _to_string() -> String:

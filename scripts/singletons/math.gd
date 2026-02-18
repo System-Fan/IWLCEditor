@@ -373,6 +373,15 @@ func isNonzeroImag(n:PackedInt64Array) -> bool:
 func isNonzeroAxial(n:PackedInt64Array) -> bool:
 	return bool(n[0]) != bool(n[1])
 
+func isReal(n:PackedInt64Array) -> bool:
+	return !n[1]
+
+func isImag(n:PackedInt64Array) -> bool:
+	return !n[0]
+
+func isAxial(n:PackedInt64Array) -> bool:
+	return !(n[0] && n[1])
+
 func isComplex(n:PackedInt64Array) -> bool:
 	return n[0] and n[1]
 

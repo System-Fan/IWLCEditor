@@ -16,7 +16,7 @@ func draw() -> void:
 	if editor.settingsOpen:
 		if editor.settingsMenu.levelSettings.visible: drawOutline(editor.levelBoundsObject,Color.GREEN)
 	else: 
-		if editor.focusDialog.focused: drawOutline(editor.focusDialog.focused,Color("#0f0b"))
+		if editor.focusDialog.focused: drawOutline(editor.focusDialog.focused,Color("#0f0a"))
 		if editor.focusDialog.componentFocused: drawOutline(editor.focusDialog.componentFocused,Color.RED)
 		if editor.multiselect.state == Multiselect.STATE.HOLDING:
 			if editor.objectHovered and editor.objectHovered != editor.focusDialog.focused: drawOutline(editor.objectHovered,Color("#0f06"))

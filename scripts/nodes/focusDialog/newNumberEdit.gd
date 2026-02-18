@@ -29,20 +29,31 @@ var numberSemiNegative:Array[bool] = [] # if a number's sign is currently inaccu
 var texts:Array[String] = [""] # one at the start and one after each number. may be empty
 var currentExpression:Array = []
 var expressionErrored:bool = false
+var result:PackedInt64Array
+var isZeroI:bool = false
 
-func setValue(value:PackedInt64Array, coerce:bool) -> void:
-	if coerce:
-		text = M.str(value)
-		parseText(true)
-		buildText()
+enum TYPE {ALL, AXIAL, NONNEGATIVE_INTEGER}
 
-func convertNumbers(from:M.SYSTEM) -> void:
-	pass
-	#Changes.addChange(Changes.ConvertNumberChange.new(self, from, &"value"))
+@export var type:TYPE = TYPE.ALL
+@export var allowZeroI:bool = false:
+	set(value):
+		allowZeroI = value
+		if !allowZeroI: isZeroI = false
+@export var allowZero:bool = true
+
+func setValue(value:PackedInt64Array) -> void:
+	text = M.str(value)
+	parseText(true)
+	buildText()
+
+func setZeroI() -> void:
+	text = "0i"
+	parseText(true)
+	buildText()
 
 func interact() -> void:
 	theme_type_variation = &"NumberEditPanelContainerSelected"
-	selectAll()
+	if numbers: numberCaptureCursor(numberStarts[0])
 
 func deinteract() -> void:
 	theme_type_variation = &"NumberEditPanelContainer"
@@ -115,11 +126,25 @@ func parseText(manual:bool=false) -> void:
 
 func evaluate(manual:bool=false) -> void:
 	expressionErrored = false
-	var result:PackedInt64Array = evaluateExpression(currentExpression)
-	if !expressionErrored:
-		print(result)
-		if !manual: valueSet.emit(result)
-	else: print("error!!")
+	result = evaluateExpression(currentExpression)
+	theme_type_variation = &"NumberEditPanelContainerSelected"
+	print(text, manual)
+	isZeroI = allowZeroI and text == "0i"
+	if !allowZero and !isZeroI and M.nex(result): displayError()
+	elif !expressionErrored:
+		if !manual:
+			match type:
+				TYPE.ALL: valueSet.emit(result)
+				TYPE.AXIAL:
+					if M.isAxial(result): valueSet.emit(result)
+					else: displayError()
+				TYPE.NONNEGATIVE_INTEGER:
+					if M.isReal(result) and M.isInteger(result) and M.gte(result, M.ZERO): valueSet.emit(result)
+					else: displayError()
+	else: displayError()
+
+func displayError() -> void:
+	theme_type_variation = &"NumberEditPanelContainerError"
 
 enum TOKEN {NUMBER, LBRACKET, RBRACKET, CROSS, DASH, X, SLASH, I, UNKNOWN}
 enum STEP {VALUE, BRACKET, AXIS, PRODUCT, SUM} # symbol in the parsing expression grammar
@@ -150,7 +175,7 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 						if layer == 0:
 							if index == 0: break
 							if index == len(tokens)-1:
-								print("sum error!")
+								#print("sum error!")
 								return [EXPRESSION.ERROR]
 							# we only absorb the leftmost one, so that unary negation can absorb the rest
 							# "1---3" -> minus("1", "--3")
@@ -172,7 +197,7 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 					TOKEN.X, TOKEN.SLASH:
 						if layer == 0:
 							if index == 0 or index == len(tokens)-1:
-								print("product error!")
+								#print("product error!")
 								return [EXPRESSION.ERROR]
 							# product!
 							return [
@@ -186,7 +211,7 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 			while tokens[0].x in [TOKEN.CROSS, TOKEN.DASH]:
 				if tokens.pop_front().x == TOKEN.DASH: axis = M.negate(axis)
 				if len(tokens) == 0:
-					print("axis error!")
+					#print("axis error!")
 					return [EXPRESSION.ERROR]
 			while tokens[-1].x == TOKEN.I:
 				tokens.pop_back()
@@ -233,7 +258,7 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 			return parseTokens(tokens, STEP.VALUE)
 		STEP.VALUE, _:
 			if len(tokens) > 1 or tokens[0].x != TOKEN.NUMBER:
-				print("value error!")
+				#print("value error!")
 				return [EXPRESSION.ERROR]
 			# value!
 			return [EXPRESSION.NUMBER, tokens[0].y]
@@ -290,7 +315,6 @@ func receiveKey(key:InputEventKey) -> bool:
 					else: cursorStart += 1
 					cursorEnd = cursorStart
 					numberCaptureCursor(cursorStart)
-			placeCursor()
 		KEY_LEFT:
 			cursorMode = CURSOR_MODE.NORMAL
 			if Input.is_key_pressed(KEY_SHIFT):
@@ -303,37 +327,34 @@ func receiveKey(key:InputEventKey) -> bool:
 					else: cursorStart -= 1
 					cursorEnd = cursorStart
 					numberCaptureCursor(cursorStart)
-			placeCursor()
 		KEY_UP:
 			match cursorMode:
 				CURSOR_MODE.NORMAL:
 					for number in numbers:
 						if numberStarts[number] >= cursorStart && numberEnds[number] <= cursorEnd: changeNumber(number, 1)
-					buildText()
 				CURSOR_MODE.NUMBER:
 					changeNumber(cursorSelectedNumber, 1)
 					numberCaptureCursor(cursorStart)
-					buildText()
 		KEY_DOWN:
 			match cursorMode:
 				CURSOR_MODE.NORMAL:
 					for number in numbers:
 						if numberStarts[number] >= cursorStart && numberEnds[number] <= cursorEnd: changeNumber(number, -1)
-					buildText()
 				CURSOR_MODE.NUMBER:
 					changeNumber(cursorSelectedNumber, -1)
+					print(numberEnds)
 					numberCaptureCursor(cursorStart)
-					buildText()
 		KEY_TAB:
 			match cursorMode:
 				_:
 					if Input.is_key_pressed(KEY_SHIFT):
+						if cursorSelectedNumber == 0: return false
 						for number in range(numbers,0,-1): if numberStarts[number-1] < cursorStart:
 							numberCaptureCursor(numberStarts[number-1]); break
 					else:
+						if cursorSelectedNumber == numbers: return false
 						for number in numbers: if numberEnds[number] > cursorEnd:
 							numberCaptureCursor(numberStarts[number]); break
-			placeCursor()
 		KEY_A:
 			if Input.is_key_pressed(KEY_CTRL):
 				selectAll()
@@ -357,7 +378,7 @@ func receiveKey(key:InputEventKey) -> bool:
 					else:
 						setNumber(cursorSelectedNumber, 0)
 						numberCaptureCursor(cursorStart)
-						buildText()
+		KEY_ENTER: setValue(result)
 		_:
 			if key.keycode >= 32 and key.keycode < 128:
 				if Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_ALT) or Input.is_key_pressed(KEY_META): return false
@@ -372,14 +393,12 @@ func receiveKey(key:InputEventKey) -> bool:
 								setNumber(endNumber, numberValues[endNumber]*10+character.to_int())
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberEnds[endNumber]))
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
-								buildText()
 								return true
 							var startNumber:int = numberStarts.find(cursorStart)
 							if startNumber != -1:
 								setNumber(startNumber, character.to_int()*(10**len(str(numberValues[startNumber]))) + numberValues[startNumber])
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", cursorStart+1))
 								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
-								buildText()
 								return true
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", cursorStart+1))
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
@@ -390,11 +409,9 @@ func receiveKey(key:InputEventKey) -> bool:
 						elif Editor.eventIs(key, &"numberNegate"):
 							setNumber(cursorSelectedNumber, -numberValues[cursorSelectedNumber])
 							numberCaptureCursor(cursorStart)
-							buildText()
 						elif "0123456789".contains(character):
 							setNumber(cursorSelectedNumber, character.to_int())
 							numberCaptureCursor(cursorStart)
-							buildText()
 						else: return false
 			else: return false
 	return true
@@ -428,6 +445,7 @@ func setNumber(number:int, to:int) -> void:
 		Changes.addChange(Changes.NumberEditNumberChange.new(self, shiftedNumber, &"numberStarts", numberStarts[shiftedNumber] + lenChange))
 		Changes.addChange(Changes.NumberEditNumberChange.new(self, shiftedNumber, &"numberEnds", numberEnds[shiftedNumber] + lenChange))
 	Changes.addChange(Changes.GlobalPropertyChange.new(self, &"textLen", textLen + lenChange))
+	buildText()
 	evaluate()
 
 func numberCheckSign(number:int, to:int) -> int:
@@ -439,7 +457,7 @@ func numberCheckSign(number:int, to:int) -> int:
 			Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberText", numberText))
 			Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberSemiNegative", !numberSemiNegative[number]))
 			return -to
-	elif numberValues[number] < 0 and texts[number][-1] == "+":
+	elif numberValues[number] < 0 and numberText[-1] == "+":
 		numberText[-1] = "-"
 		Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberText", numberText))
 		Changes.addChange(Changes.NumberEditNumberChange.new(self, number, &"numberSemiNegative", !numberSemiNegative[number]))
@@ -453,6 +471,7 @@ func numberCaptureCursor(fromPosition:int) -> void:
 			Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", numberEnds[number]))
 			Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorSelectedNumber", number))
 			Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorMode", CURSOR_MODE.NUMBER))
+			placeCursor()
 			return
 
 func placeCursor() -> void:

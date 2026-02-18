@@ -20,24 +20,27 @@ func focus(focused:GameObject, new:bool, _dontRedirect:bool) -> void:
 		if Game.levelStart == focused: %levelStart.button_pressed = true
 		else: %savestate.button_pressed = true
 	if %playerStateSettings.visible:
-		if !main.interacted: main.interact(%playerKeyCountEdit.realEdit)
+		if !main.interacted: main.interact(%playerKeyCountEdit)
 
 func setSelectedColor(toColor:Game.COLOR) -> void:
 	%playerColorSelector.setSelect(toColor)
 	_playerColorSelected(toColor)
 
 func _playerColorSelected(_color:Game.COLOR) -> void:
+	var new:bool = color != _color
 	color = _color
 	if main.focused is PlayerPlaceholderObject:
-		%playerKeyCountEdit.setValue(Game.player.key[color], true)
+		if new:
+			%playerKeyCountEdit.setValue(Game.player.key[color])
+			%playerKeyGlistenEdit.setValue(Game.player.glisten[color])
 		%playerStar.button_pressed = Game.player.star[color]
 		%playerCurse.button_pressed = Game.player.curse[color]
-		%playerKeyGlistenEdit.setValue(Game.player.glisten[color], true)
 	else:
-		%playerKeyCountEdit.setValue(main.focused.key[color], true)
+		if new:
+			%playerKeyCountEdit.setValue(main.focused.key[color])
+			%playerKeyGlistenEdit.setValue(main.focused.glisten[color])
 		%playerStar.button_pressed = main.focused.star[color]
 		%playerCurse.button_pressed = main.focused.curse[color]
-		%playerKeyGlistenEdit.setValue(main.focused.glisten[color], true)
 
 func receiveKey(event:InputEvent) -> bool:
 	if Editor.eventIs(event, &"focusPlayerStart") and %playerSpawnSettings.visible: _playTest()

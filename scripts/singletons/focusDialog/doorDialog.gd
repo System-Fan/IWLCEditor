@@ -27,17 +27,17 @@ func focus(focused:GameObject, new:bool, dontRedirect:bool) -> void: # Door or R
 			%doorAuraSettings.visible = focused.type != Door.TYPE.GATE
 			%doorCopySettings.visible = focused.type != Door.TYPE.GATE
 			%doorColorSelector.setSelect(focused.colorSpend)
-			%doorCopiesEdit.setValue(focused.copies, true)
 			%spend.button_pressed = true
 			%blastLockSettings.visible = false
 		if main.interacted and !main.interacted.is_visible_in_tree(): main.deinteract()
 		if %doorCopySettings.visible:
-			if !main.interacted: main.interact(%doorCopiesEdit.realEdit)
+			if !main.interacted: main.interact(%doorCopiesEdit)
 		elif %doorAxialNumberEdit.visible:
 			if !main.interacted: main.interact(%doorAxialNumberEdit)
 		else: main.deinteract()
 		if new:
 			%lockHandler.setup(focused)
+			%doorCopiesEdit.setValue(focused.copies)
 			if focused.type == Door.TYPE.SIMPLE and !dontRedirect: main.focusComponent(focused.locks[0])
 	elif focused is RemoteLock:
 		%door.visible = false
@@ -47,7 +47,7 @@ func focus(focused:GameObject, new:bool, dontRedirect:bool) -> void: # Door or R
 		%doorsHandler.setup(focused)
 		focusComponent(focused, new)
 
-func focusComponent(component:GameComponent, _new:bool) -> void: # Lock or RemoteLock
+func focusComponent(component:GameComponent, new:bool) -> void: # Lock or RemoteLock
 	%doorColorSelector.visible = true
 	%doorColorSelector.setSelect(component.color)
 	if component is Lock: %lockHandler.setSelect(component.index)
@@ -60,8 +60,8 @@ func focusComponent(component:GameComponent, _new:bool) -> void: # Lock or Remot
 	%remoteLockConvert.visible = Mods.active(&"C1") and component is not RemoteLock
 
 	%doorAxialNumberEdit.visible = component.type == Lock.TYPE.NORMAL or component.type == Lock.TYPE.EXACT or component.type == Lock.TYPE.GLISTENING
-	%doorAxialNumberEdit.zeroIValid = component.type == Lock.TYPE.EXACT
-	%doorAxialNumberEdit.setValue(component.count, true)
+	%doorAxialNumberEdit.allowZeroI = component.type == Lock.TYPE.EXACT
+	if new: %doorAxialNumberEdit.setValue(component.count)
 	if component.zeroI: %doorAxialNumberEdit.setZeroI()
 
 	%doorCopySettings.visible = false
@@ -76,8 +76,9 @@ func focusComponent(component:GameComponent, _new:bool) -> void: # Lock or Remot
 	%isPartial.button_pressed = component.isPartial
 	%partialDenominator.visible = component.isPartial
 	%discreteBlastSettings.visible = !component.isPartial and (component.type != Lock.TYPE.ALL or Mods.active(&"C3"))
-	%partialBlastNumeratorEdit.setValue(component.count, true)
-	%partialBlastDenominatorEdit.setValue(component.denominator, true)
+	if new:
+		%partialBlastNumeratorEdit.setValue(component.count)
+		%partialBlastDenominatorEdit.setValue(component.denominator)
 
 	if component is Lock: %lockHandler.redrawButton(component.index)
 	%lockNegated.button_pressed = component.negated
@@ -86,7 +87,7 @@ func focusComponent(component:GameComponent, _new:bool) -> void: # Lock or Remot
 	if %doorAxialNumberEdit.visible:
 		if !main.interacted: main.interact(%doorAxialNumberEdit)
 	elif %partialBlastSettings.visible:
-		if !main.interacted: main.interact(%partialBlastNumeratorEdit.realEdit)
+		if !main.interacted: main.interact(%partialBlastNumeratorEdit)
 	else: main.deinteract()
 
 func receiveKey(event:InputEvent) -> bool:
@@ -239,13 +240,13 @@ func _lockNegatedSet(value:bool) -> void:
 	Changes.addChange(Changes.PropertyChange.new(lock,&"negated",value))
 	Changes.bufferSave()
 
-func partialBlastNumeratorSet(value:PackedInt64Array) -> void:
+func _partialBlastNumeratorSet(value:PackedInt64Array) -> void:
 	if main.componentFocused is not Lock and main.focused is not RemoteLock: return
 	var lock:GameComponent = main.componentFocused if main.componentFocused is Lock else main.focused
 	Changes.addChange(Changes.PropertyChange.new(lock,&"count",value))
 	Changes.bufferSave()
 
-func partialBlastDenominatorSet(value:PackedInt64Array) -> void:
+func _partialBlastDenominatorSet(value:PackedInt64Array) -> void:
 	if main.componentFocused is not Lock and main.focused is not RemoteLock: return
 	var lock:GameComponent = main.componentFocused if main.componentFocused is Lock else main.focused
 	Changes.addChange(Changes.PropertyChange.new(lock,&"denominator",value))

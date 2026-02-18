@@ -21,6 +21,7 @@ static var FRAME_GLITCH:KeyTextureLoader = KeyTextureLoader.new("res://assets/ga
 static var OUTLINE_MASK:KeyTextureLoader = KeyTextureLoader.new("res://assets/game/key/$t/outlineMask.png")
 static var QUICKSILVER_OUTLINE_MASK:KeyTextureLoader = KeyTextureLoader.new("res://assets/game/key/quicksilver/outlineMask$t.png", true)
 
+# for the additional little thing in the operator key
 static var OPERATOR_FRAME:OperatorTextureLoader = OperatorTextureLoader.new("res://assets/game/key/operator/frame/$t.png")
 static var OPERATOR_FILL:OperatorTextureLoader = OperatorTextureLoader.new("res://assets/game/key/operator/fill/$t.png")
 static var OPERATOR_FRAME_GLITCH:OperatorTextureLoader = OperatorTextureLoader.new("res://assets/game/key/operator/frameGlitch/$t.png")
@@ -171,15 +172,6 @@ static func keyTextureType(keyType:TYPE, keyUn:bool) -> KeyTextureLoader.TYPE:
 		TYPE.OPERATOR: return KeyTextureLoader.TYPE.OPERATOR
 		_: return KeyTextureLoader.TYPE.NORMAL
 
-static func operationTextureType(keyMode:OPERATION) -> OperatorTextureLoader.TYPE:
-	match keyMode:
-		OPERATION.ADD: return OperatorTextureLoader.TYPE.ADD
-		OPERATION.SUBTRACT: return OperatorTextureLoader.TYPE.SUBTRACT
-		OPERATION.MULTIPLY: return OperatorTextureLoader.TYPE.MULTIPLY
-		OPERATION.DIVIDE: return OperatorTextureLoader.TYPE.DIVIDE
-		OPERATION.MODULO: return OperatorTextureLoader.TYPE.MODULO
-		_: return OperatorTextureLoader.TYPE.SET
-
 static func drawKey(keyDrawGlitch:RID,keyDrawMain:RID, keyOffset:Vector2,keyColor:Game.COLOR,keyType:TYPE=TYPE.NORMAL,keyUn:bool=false,keyGlitchMimic:Game.COLOR=Game.COLOR.GLITCH,keyPartialInfiniteAlpha:float=1) -> void:
 	var rect:Rect2 = Rect2(keyOffset, Vector2(32,32))
 	var textureType:KeyTextureLoader.TYPE = keyTextureType(keyType, keyUn)
@@ -201,19 +193,18 @@ static func drawKey(keyDrawGlitch:RID,keyDrawMain:RID, keyOffset:Vector2,keyColo
 
 static func drawOperationSymbol(keyDrawAdditonal:RID, keyDrawGlitch:RID, keyOffset:Vector2, partColor:Game.COLOR, keyMode:OPERATION=OPERATION.SET,keyGlitchMimic:Game.COLOR=Game.COLOR.GLITCH):
 	var rect:Rect2 = Rect2(keyOffset, Vector2(32,32))
-	var textureType:OperatorTextureLoader.TYPE = operationTextureType(keyMode)
 	if partColor in TEXTURE_COLORS:
-		RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATION_TEXTURE.current([partColor,textureType]))
+		RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATION_TEXTURE.current([partColor,keyMode]))
 	elif partColor == Game.COLOR.GLITCH:
-		RenderingServer.canvas_item_add_texture_rect(keyDrawGlitch,rect,OPERATOR_FRAME_GLITCH.current([textureType]))
-		RenderingServer.canvas_item_add_texture_rect(keyDrawGlitch,rect,OPERATOR_FILL.current([textureType]),false,Game.mainTone[partColor])
+		RenderingServer.canvas_item_add_texture_rect(keyDrawGlitch,rect,OPERATOR_FRAME_GLITCH.current([keyMode]))
+		RenderingServer.canvas_item_add_texture_rect(keyDrawGlitch,rect,OPERATOR_FILL.current([keyMode]),false,Game.mainTone[partColor])
 		if keyGlitchMimic != Game.COLOR.GLITCH:
-			if keyGlitchMimic in TEXTURE_COLORS: RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATION_GLITCH.current([keyGlitchMimic,textureType]))
+			if keyGlitchMimic in TEXTURE_COLORS: RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATION_GLITCH.current([keyGlitchMimic,keyMode]))
 			else: 
-				RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATOR_FILL_GLITCH.current([textureType]),false,Game.mainTone[keyGlitchMimic])
+				RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATOR_FILL_GLITCH.current([keyMode]),false,Game.mainTone[keyGlitchMimic])
 	else:
-		RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATOR_FRAME.current([textureType]))
-		RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATOR_FILL.current([textureType]),false,Game.mainTone[partColor])
+		RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATOR_FRAME.current([keyMode]))
+		RenderingServer.canvas_item_add_texture_rect(keyDrawAdditonal,rect,OPERATOR_FILL.current([keyMode]),false,Game.mainTone[partColor])
 
 func propertyChangedInit(property:StringName) -> void:
 	if property == &"type":

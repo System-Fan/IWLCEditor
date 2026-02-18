@@ -91,9 +91,9 @@ func _keyOperationSelected(operation:KeyBulk.OPERATION) -> void:
 	Changes.addChange(Changes.PropertyChange.new(main.focused,&"operation",operation))
 	Changes.bufferSave()
 
-func _keyCountSet(count:PackedInt64Array) -> void:
+func _keyCountSet(value:PackedInt64Array) -> void:
 	if main.focused is not KeyBulk: return
-	Changes.addChange(Changes.PropertyChange.new(main.focused,&"count",count))
+	Changes.addChange(Changes.PropertyChange.new(main.focused,&"count",value))
 	Changes.bufferSave()
 
 func _keyInfiniteToggled(value:bool) -> void:

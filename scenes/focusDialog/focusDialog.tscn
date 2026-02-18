@@ -823,6 +823,7 @@ default_color = Color(0.8352941, 0.8352941, 0.8352941, 1)
 [connection signal="select" from="keyDialog/c/c/c/c/keyTypeSelector" to="keyDialog" method="_keyTypeSelected"]
 [connection signal="toggled" from="keyDialog/c/c/c/c/keyInfiniteToggle" to="keyDialog" method="_keyInfiniteToggled"]
 [connection signal="toggled" from="keyDialog/c/c/c/c/keyGlisteningToggle" to="keyDialog" method="_keyGlisteningToggled"]
+[connection signal="valueSet" from="keyDialog/c/c/c/keyCountEdit" to="keyDialog" method="_keyCountSet"]
 [connection signal="select" from="keyDialog/c/c/c/keyOperationSelector" to="keyDialog" method="_keyOperationSelected"]
 [connection signal="select" from="keyDialog/c/c/c/keyRotorSelector" to="keyDialog" method="_keyRotorSelected"]
 [connection signal="toggled" from="keyDialog/c/c/c/keyUn" to="keyDialog" method="_keyUnToggled"]

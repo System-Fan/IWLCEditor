@@ -275,6 +275,8 @@ func cabs(n:PackedInt64Array) -> PackedInt64Array:
 
 ## the axes present in the number, ignoring sign
 func axibs(n:PackedInt64Array) -> PackedInt64Array: return cabs(axis(n))
+## the axes present in the number, or 1 if zero, ignoring sign
+func saxibs(n:PackedInt64Array) -> PackedInt64Array: return cabs(saxis(n))
 
 ## truncates number
 func trunc(n:PackedInt64Array) -> PackedInt64Array:

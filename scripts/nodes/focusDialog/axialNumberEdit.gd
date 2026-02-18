@@ -36,8 +36,14 @@ func setValue(_value:PackedInt64Array, manual:bool=false) -> void:
 	else: %drawText.text = M.str(value)
 	if !manual: valueSet.emit(value)
 
-func increment() -> void: setValue(M.add(value, M.ONE))
-func decrement() -> void: setValue(M.sub(value, M.ONE))
+func increment() -> void:
+	var result:PackedInt64Array = M.add(value, M.saxibs(value)if M.ex(value) else M.acrabs(bufferedSign))
+	if M.nex(result): bufferedSign = M.saxibs(value)
+	setValue(result)
+func decrement() -> void:
+	var result:PackedInt64Array = M.sub(value, M.saxibs(value)if M.ex(value) else M.acrabs(bufferedSign))
+	if M.nex(result): bufferedSign = M.saxibs(value)
+	setValue(result)
 
 func deNew():
 	newlyInteracted = false

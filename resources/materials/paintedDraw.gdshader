@@ -9,9 +9,5 @@ vec3 lerpColor(vec3 color1, vec3 color2, float t) {
 }
 
 void fragment() {
-	if (scale.x > 0.125 && scale.y > 0.125) {
-		if (COLOR.a > 0.0) {
-			COLOR.rgb = lerpColor(colorTop, colorBottom, UV.y/scale.y);
-		}
-	}
+	COLOR.rgb = lerpColor(colorTop, colorBottom, UV.y/scale.y);
 }

@@ -326,6 +326,7 @@ text = "Save Changes"
 
 [connection signal="close_requested" from="." to="." method="_close"]
 [connection signal="item_selected" from="selectMods/c/c/c/modpacks" to="selectMods" method="_modpackSelected"]
+[connection signal="item_selected" from="selectMods/c/c/c/versions" to="selectMods" method="_versionSelected"]
 [connection signal="meta_clicked" from="selectMods/c/c2/c2/scroll/c/info/versionInfo/version" to="." method="_linkClicked"]
 [connection signal="pressed" from="selectMods/c/c2/c2/buttons/HBoxContainer/cancelButton" to="." method="_close"]
 [connection signal="pressed" from="selectMods/c/c2/c2/buttons/HBoxContainer/nextButton" to="." method="_next"]

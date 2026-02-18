@@ -116,12 +116,19 @@ static var modpacks:Dictionary[StringName, Modpack] = {
 		[
 			Version.new(
 				"C1-C5 Mechanics",
-				"202?-??-??",
-				"Includes mechanics from C1-C5. If you want to submit levels for IWL:C, you should use this.",
-				"https://github.com/I-Wanna-Lockpick-Community/IWannaLockpick-Continued", # change this to the github releases thing
+				"2025-12-26",
+				"Includes mechanics from C1-C5. For backwards compatibility.",
+				"https://github.com/I-Wanna-Lockpick-Community/IWannaLockpick-Continued/releases/tag/demo1",
 				[&"C1", &"C2", &"C3", &"C4", &"C5"]
+			),
+			Version.new(
+				"C1-C6 Mechanics",
+				"202?-??-??",
+				"Includes mechanics from C1-C6. If you want to submit levels for IWL:C, you should use this.",
+				"https://github.com/I-Wanna-Lockpick-Community/IWannaLockpick-Continued",
+				[&"C1", &"C2", &"C3", &"C4", &"C5", &"Fractions", &"OperatorKey"]
 			)
-		]
+		], 1
 	)
 }
 
@@ -266,13 +273,15 @@ class Modpack extends RefCounted:
 	var icon:Texture2D
 	var iconSmall:Texture2D
 	var versions:Array[Version]
+	var defaultVersion:int
 
-	func _init(_name:String,_description:String,_icon:Texture2D,_iconSmall:Texture2D,_versions:Array[Version]) -> void:
+	func _init(_name:String,_description:String,_icon:Texture2D,_iconSmall:Texture2D,_versions:Array[Version], _defaultVersion:int=0) -> void:
 		name = _name
 		description = _description
 		icon = _icon
 		iconSmall = _iconSmall
 		versions = _versions
+		defaultVersion = _defaultVersion
 
 class Version extends RefCounted:
 	var name:String

@@ -19,6 +19,7 @@ func focus(focused:GameObject, new:bool, dontRedirect:bool) -> void: # Door or R
 		%frozen.button_pressed = focused.frozen
 		%crumbled.button_pressed = focused.crumbled
 		%painted.button_pressed = focused.painted
+		%oscillate.button_pressed = focused.oscillate
 		%realInfiniteCopy.button_pressed = M.ex(M.r(focused.infCopies))
 		%imaginaryInfiniteCopy.button_pressed = M.ex(M.i(focused.infCopies))
 		if !main.componentFocused:
@@ -150,6 +151,7 @@ func changedMods() -> void:
 	%lockArmament.visible = Mods.active(&"C5")
 	%realInfiniteCopy.visible = Mods.active(&"InfCopies")
 	%imaginaryInfiniteCopy.visible = Mods.active(&"InfCopies")
+	%oscillate.visible = Mods.active(&"Fractions")
 	if main.componentFocused is Lock and main.componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL]:
 		main.focusComponent(main.componentFocused)
 
@@ -231,6 +233,12 @@ func _paintedSet(value:bool) -> void:
 	if main.focused is not Door and main.focused is not RemoteLock: return
 	if main.focused is Door and main.focused.type == Door.TYPE.GATE: return
 	Changes.addChange(Changes.PropertyChange.new(main.focused,&"painted",value))
+	Changes.bufferSave()
+
+func _oscillateSet(value:bool) -> void:
+	if main.focused is not Door and main.focused is not RemoteLock: return
+	if main.focused is Door and main.focused.type == Door.TYPE.GATE: return
+	Changes.addChange(Changes.PropertyChange.new(main.focused,&"oscillate",value))
 	Changes.bufferSave()
 
 func _lockNegatedSet(value:bool) -> void:

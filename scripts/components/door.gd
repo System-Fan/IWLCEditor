@@ -63,6 +63,7 @@ var type:TYPE = TYPE.SIMPLE
 var frozen:bool = false
 var crumbled:bool = false
 var painted:bool = false
+var oscillate:bool = false
 
 var drawDropShadow:RID
 var drawScaled:RID # also draws aura breaker fills

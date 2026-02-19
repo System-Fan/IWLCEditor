@@ -22,6 +22,7 @@
 [ext_resource type="Texture2D" uid="uid://blvji7kl64sbd" path="res://assets/ui/focusDialog/lockHandler/colorLink.png" id="17_5vlab"]
 [ext_resource type="Script" uid="uid://c71qe58ht0isn" path="res://scripts/nodes/focusDialog/configurationSelector.gd" id="17_cu8b0"]
 [ext_resource type="Texture2D" uid="uid://cc64xnxuowxqi" path="res://assets/game/door/aura/frozen1x1.png" id="19_vn3na"]
+[ext_resource type="Texture2D" uid="uid://ymp7vkb5t4rc" path="res://assets/ui/focusDialog/doorBooleans/oscillate temp.png" id="20_2wjug"]
 [ext_resource type="PackedScene" uid="uid://sm362bc2r4fm" path="res://scenes/focusDialog/numberEdit.tscn" id="20_gx4cd"]
 [ext_resource type="Texture2D" uid="uid://cpqsyj5t7vigm" path="res://assets/game/door/aura/crumbled1x1.png" id="20_vn3na"]
 [ext_resource type="Texture2D" uid="uid://bar7rrr1p3a1h" path="res://assets/ui/focusDialog/lockBooleans/negated.png" id="21_bfxh1"]
@@ -59,7 +60,6 @@ metadata/_custom_type_script = "uid://cgjhnhjwymb8g"
 script = ExtResource("22_s5h3h")
 explanation = "[%s]Toggle color link"
 hotkeys = Array[StringName]([&"focusDoorColorLink"])
-metadata/_custom_type_script = "uid://lwocqakgt4qr"
 
 [sub_resource type="Resource" id="Resource_q8u4b"]
 script = ExtResource("22_s5h3h")
@@ -259,7 +259,6 @@ icon = ExtResource("8_mscoq")
 
 [node name="doorDialog" type="Control" parent="." unique_id=1206125138 groups=["modUI"]]
 unique_name_in_owner = true
-visible = false
 anchors_preset = 0
 script = ExtResource("11_drywk")
 
@@ -268,9 +267,9 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -87.0
-offset_right = 87.0
-offset_bottom = 40.0
+offset_left = -91.0
+offset_right = 91.0
+offset_bottom = 223.0
 grow_horizontal = 2
 theme_override_constants/separation = 4
 
@@ -375,6 +374,7 @@ metadata/_custom_type_script = "uid://c70juj2p5s6yd"
 
 [node name="lockSettings" type="HBoxContainer" parent="doorDialog/c/lock/c/c" unique_id=453563631]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 alignment = 1
 
@@ -409,12 +409,12 @@ layout_mode = 2
 icon = ExtResource("23_ft2jg")
 metadata/explanation = SubResource("Resource_ljt45")
 
-[node name="doorAuraSettings" type="HBoxContainer" parent="doorDialog/c/lock/c/c" unique_id=16192028]
+[node name="doorBooleans" type="HBoxContainer" parent="doorDialog/c/lock/c/c" unique_id=16192028]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="frozen" type="Button" parent="doorDialog/c/lock/c/c/doorAuraSettings" unique_id=1221504007 groups=["explained"]]
+[node name="frozen" type="Button" parent="doorDialog/c/lock/c/c/doorBooleans" unique_id=1221504007 groups=["explained"]]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SelectorButton"
@@ -422,7 +422,7 @@ toggle_mode = true
 icon = ExtResource("19_vn3na")
 metadata/explanation = SubResource("Resource_p7jkh")
 
-[node name="crumbled" type="Button" parent="doorDialog/c/lock/c/c/doorAuraSettings" unique_id=961008234 groups=["explained"]]
+[node name="crumbled" type="Button" parent="doorDialog/c/lock/c/c/doorBooleans" unique_id=961008234 groups=["explained"]]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SelectorButton"
@@ -430,7 +430,7 @@ toggle_mode = true
 icon = ExtResource("20_vn3na")
 metadata/explanation = SubResource("Resource_ft2jg")
 
-[node name="painted" type="Button" parent="doorDialog/c/lock/c/c/doorAuraSettings" unique_id=1835139374 groups=["explained"]]
+[node name="painted" type="Button" parent="doorDialog/c/lock/c/c/doorBooleans" unique_id=1835139374 groups=["explained"]]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"SelectorButton"
@@ -438,8 +438,15 @@ toggle_mode = true
 icon = ExtResource("21_drywk")
 metadata/explanation = SubResource("Resource_16i1m")
 
+[node name="oscillate" type="Button" parent="doorDialog/c/lock/c/c/doorBooleans" unique_id=733062959]
+layout_mode = 2
+toggle_mode = true
+icon = ExtResource("20_2wjug")
+vertical_icon_alignment = 0
+
 [node name="doorCopySettings" type="HBoxContainer" parent="doorDialog/c/lock/c/c" unique_id=690871626]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 alignment = 1
 
@@ -462,6 +469,7 @@ icon = ExtResource("25_hb0ue")
 
 [node name="doorAxialNumberEdit" parent="doorDialog/c/lock/c/c" unique_id=643775389 instance=ExtResource("20_gx4cd")]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(151, 0)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -469,6 +477,7 @@ script = ExtResource("21_k4n5y")
 
 [node name="blastLockSettings" type="VBoxContainer" parent="doorDialog/c/lock/c/c" unique_id=2055272722]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 alignment = 1
 
@@ -530,6 +539,7 @@ size_flags_horizontal = 3
 
 [node name="remoteLock" type="PanelContainer" parent="doorDialog/c" unique_id=381581047]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_type_variation = &"DialogPanelContainer"
 
@@ -550,6 +560,7 @@ metadata/_custom_type_script = "uid://2iqmgcrc5wpq"
 
 [node name="playerDialog" type="Control" parent="." unique_id=1028920322 groups=["modUI"]]
 unique_name_in_owner = true
+visible = false
 anchors_preset = 0
 script = ExtResource("40_p7jkh")
 
@@ -777,6 +788,7 @@ metadata/_custom_type_script = "uid://bg8oswa2bhdsv"
 
 [node name="speechBubbler" type="Node2D" parent="." unique_id=1211445522]
 unique_name_in_owner = true
+visible = false
 
 [node name="Polygon2D" type="Polygon2D" parent="speechBubbler" unique_id=2113235186]
 color = Color(0.25490198, 0.25490198, 0.25490198, 1)
@@ -805,9 +817,9 @@ default_color = Color(0.8352941, 0.8352941, 0.8352941, 1)
 [connection signal="toggled" from="doorDialog/c/lock/c/c/lockSettings/lockNegated" to="doorDialog" method="_lockNegatedSet"]
 [connection signal="toggled" from="doorDialog/c/lock/c/c/lockSettings/lockArmament" to="doorDialog" method="_lockArmamentSet"]
 [connection signal="pressed" from="doorDialog/c/lock/c/c/lockSettings/remoteLockConvert" to="doorDialog" method="_remoteLockConvert"]
-[connection signal="toggled" from="doorDialog/c/lock/c/c/doorAuraSettings/frozen" to="doorDialog" method="_frozenSet"]
-[connection signal="toggled" from="doorDialog/c/lock/c/c/doorAuraSettings/crumbled" to="doorDialog" method="_crumbledSet"]
-[connection signal="toggled" from="doorDialog/c/lock/c/c/doorAuraSettings/painted" to="doorDialog" method="_paintedSet"]
+[connection signal="toggled" from="doorDialog/c/lock/c/c/doorBooleans/frozen" to="doorDialog" method="_frozenSet"]
+[connection signal="toggled" from="doorDialog/c/lock/c/c/doorBooleans/crumbled" to="doorDialog" method="_crumbledSet"]
+[connection signal="toggled" from="doorDialog/c/lock/c/c/doorBooleans/painted" to="doorDialog" method="_paintedSet"]
 [connection signal="toggled" from="doorDialog/c/lock/c/c/doorCopySettings/realInfiniteCopy" to="doorDialog" method="_doorRealInfiniteSet"]
 [connection signal="valueSet" from="doorDialog/c/lock/c/c/doorCopySettings/doorCopiesEdit" to="doorDialog" method="_doorCopiesSet"]
 [connection signal="toggled" from="doorDialog/c/lock/c/c/doorCopySettings/imaginaryInfiniteCopy" to="doorDialog" method="_doorImaginaryInfiniteSet"]

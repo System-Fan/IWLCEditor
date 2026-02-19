@@ -32,6 +32,10 @@ var expressionErrored:bool = false
 var result:PackedInt64Array
 var isZeroI:bool = false
 
+var shapedText:RID
+@onready var ts = TextServerManager.get_primary_interface()
+var mouseDragStart:int = -1 # the character a mouse drag started on; -1 for not currently dragging
+
 enum TYPE {ALL, AXIAL, NONNEGATIVE_INTEGER}
 
 @export var type:TYPE = TYPE.ALL
@@ -45,6 +49,7 @@ enum TYPE {ALL, AXIAL, NONNEGATIVE_INTEGER}
 
 func _ready() -> void:
 	context.numberEdits.append(self)
+	shapedText = ts.create_shaped_text()
 
 func setValue(value:PackedInt64Array) -> void:
 	text = M.str(value)
@@ -59,7 +64,7 @@ func setZeroI() -> void:
 
 func interact(last:bool=false) -> void:
 	theme_type_variation = &"NumberEditPanelContainerSelected"
-	if numbers: numberCaptureCursor(numberStarts[-1 if last else 0])
+	if numbers: numberCaptureCursor(numbers-1 if last else 0)
 	%cursor.visible = true
 
 func deinteract() -> void:
@@ -245,16 +250,22 @@ func parseTokens(tokens:Array[Vector2i], step:STEP) -> Array: # returns expressi
 						layer -= 1
 						if layer == 0:
 							# bracket!
-							if rightBracket == len(tokens)-1: # "...(sum)"
+							if rightBracket == len(tokens)-1:
 								if index == 0: # "(sum)"
 									return parseTokens(tokens.slice(index+1,rightBracket), STEP.SUM)
-								return [
+								return [ # "...(sum)"
 									EXPRESSION.TIMES,
 									parseTokens(tokens.slice(0,index), STEP.BRACKET),
 									parseTokens(tokens.slice(index+1,rightBracket), STEP.SUM)
 								]
-							else: # "...(sum)value"
-								return [
+							else:
+								if index == 0:
+									return [ # "(sum)value"
+										EXPRESSION.TIMES,
+										parseTokens(tokens.slice(index+1,rightBracket), STEP.SUM),
+										parseTokens(tokens.slice(rightBracket+1), STEP.VALUE)
+									]
+								return [ # "...(sum)value"
 									EXPRESSION.TIMES,
 									parseTokens(tokens.slice(0,index), STEP.BRACKET),
 									[
@@ -306,6 +317,8 @@ func buildText() -> void:
 		formattedText += texts[i+1]
 	%drawText.text = formattedText
 	text = %drawText.get_parsed_text()
+	ts.shaped_text_clear(shapedText)
+	ts.shaped_text_add_string(shapedText, text, FNUMBEREDIT.get_rids(), 16)
 	placeCursor()
 
 func receiveKey(key:InputEventKey) -> bool:
@@ -322,7 +335,7 @@ func receiveKey(key:InputEventKey) -> bool:
 					if Input.is_key_pressed(KEY_CTRL): cursorStart = nextPointOfInterest()
 					else: cursorStart += 1
 					cursorEnd = cursorStart
-					numberCaptureCursor(cursorStart)
+					numberCaptureCursor(numberAtIndex(cursorStart))
 			placeCursor()
 		KEY_LEFT:
 			cursorMode = CURSOR_MODE.NORMAL
@@ -335,7 +348,7 @@ func receiveKey(key:InputEventKey) -> bool:
 					if Input.is_key_pressed(KEY_CTRL): cursorStart = previousPointOfInterest()
 					else: cursorStart -= 1
 					cursorEnd = cursorStart
-					numberCaptureCursor(cursorStart)
+					numberCaptureCursor(numberAtIndex(cursorStart))
 			placeCursor()
 		KEY_UP:
 			match cursorMode:
@@ -344,7 +357,7 @@ func receiveKey(key:InputEventKey) -> bool:
 						if numberStarts[number] >= cursorStart && numberEnds[number] <= cursorEnd: changeNumber(number, 1)
 				CURSOR_MODE.NUMBER:
 					changeNumber(cursorSelectedNumber, 1)
-					numberCaptureCursor(cursorStart)
+					numberCaptureCursor(cursorSelectedNumber)
 		KEY_DOWN:
 			match cursorMode:
 				CURSOR_MODE.NORMAL:
@@ -352,14 +365,14 @@ func receiveKey(key:InputEventKey) -> bool:
 						if numberStarts[number] >= cursorStart && numberEnds[number] <= cursorEnd: changeNumber(number, -1)
 				CURSOR_MODE.NUMBER:
 					changeNumber(cursorSelectedNumber, -1)
-					numberCaptureCursor(cursorStart)
+					numberCaptureCursor(cursorSelectedNumber)
 		KEY_TAB:
 			if Input.is_key_pressed(KEY_SHIFT):
 				for number in range(numbers,0,-1): if numberStarts[number-1] < cursorStart:
 					numberCaptureCursor(numberStarts[number-1]); return true
 			else:
 				for number in numbers: if numberEnds[number] > cursorEnd:
-					numberCaptureCursor(numberStarts[number]); return true
+					numberCaptureCursor(number); return true
 			return false
 		KEY_A:
 			if Input.is_key_pressed(KEY_CTRL):
@@ -373,77 +386,118 @@ func receiveKey(key:InputEventKey) -> bool:
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", previousPointOfInterest() if Input.is_key_pressed(KEY_CTRL) else cursorStart - 1))
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
 						Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, prevStart-cursorStart)))
+						placeCursor()
 					else:
-						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
 						Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, cursorEnd - cursorStart)))
+						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+						placeCursor()
 				CURSOR_MODE.NUMBER:
 					if numberValues[cursorSelectedNumber] == 0 or Input.is_key_pressed(KEY_CTRL):
 						cursorMode = CURSOR_MODE.NORMAL
-						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
 						Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, cursorEnd - cursorStart)))
+						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+						placeCursor()
 					else:
 						setNumber(cursorSelectedNumber, 0)
-						numberCaptureCursor(cursorStart)
+						numberCaptureCursor(cursorSelectedNumber)
 		KEY_ENTER: setValue(result)
-		_:
-			if key.keycode >= 32 and key.keycode < 128:
-				if Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_ALT) or Input.is_key_pressed(KEY_META): return false
-				match cursorMode:
-					CURSOR_MODE.NORMAL:
-						var character:String = char(key.unicode)
-						if !"1234567890-+()*x/i".contains(character): return false
-						if cursorEnd > cursorStart:
-							Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, cursorEnd - cursorStart), false))
-						elif "0123456789".contains(character):
-							var endNumber:int = numberEnds.find(cursorStart)
-							if endNumber != -1:
-								setNumber(endNumber, numberValues[endNumber]*10+character.to_int())
-								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberEnds[endNumber]))
-								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
-								placeCursor()
-								return true
-							var startNumber:int = numberStarts.find(cursorStart)
-							if startNumber != -1:
-								setNumber(startNumber, character.to_int()*(10**len(str(numberValues[startNumber]))) + numberValues[startNumber])
-								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", cursorStart+1))
-								Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
-								placeCursor()
-								return true
-						Changes.addChange(Changes.NumberEditTextChange.new(self, text.insert(cursorStart, character)))
+		_: return false
+	return true
+
+func receiveUnhandledKey(key:InputEventKey) -> bool:
+	if key.keycode >= 32 and key.keycode < 128:
+		if Input.is_key_pressed(KEY_CTRL) or Input.is_key_pressed(KEY_ALT) or Input.is_key_pressed(KEY_META): return false
+		match cursorMode:
+			CURSOR_MODE.NORMAL:
+				var character:String = char(key.unicode)
+				if cursorEnd > cursorStart:
+					Changes.addChange(Changes.NumberEditTextChange.new(self, text.erase(cursorStart, cursorEnd - cursorStart), false))
+				elif "0123456789".contains(character):
+					var endNumber:int = numberEnds.find(cursorStart)
+					if endNumber != -1:
+						setNumber(endNumber, numberValues[endNumber]*10+character.to_int())
+						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberEnds[endNumber]))
+						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+						placeCursor()
+						return true
+					var startNumber:int = numberStarts.find(cursorStart)
+					if startNumber != -1:
+						setNumber(startNumber, character.to_int()*(10**len(str(numberValues[startNumber]))) + numberValues[startNumber])
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", cursorStart+1))
 						Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
 						placeCursor()
-					CURSOR_MODE.NUMBER:
-						var character:String = char(key.unicode)
-						if Editor.eventIs(key, &"numberTimesI"): pass
-						elif Editor.eventIs(key, &"numberNegate"):
-							setNumber(cursorSelectedNumber, -numberValues[cursorSelectedNumber])
-							numberCaptureCursor(cursorStart)
-						elif "0123456789".contains(character):
-							setNumber(cursorSelectedNumber, character.to_int())
-							Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberEnds[cursorSelectedNumber]))
-							Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
-							cursorMode = CURSOR_MODE.NORMAL
-							placeCursor()
-						else: return false
-			else: return false
+						return true
+				Changes.addChange(Changes.NumberEditTextChange.new(self, text.insert(cursorStart, character)))
+				Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", cursorStart+1))
+				Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+				placeCursor()
+			CURSOR_MODE.NUMBER:
+				var character:String = char(key.unicode)
+				if Editor.eventIs(key, &"numberTimesI"): pass
+				elif Editor.eventIs(key, &"numberNegate"):
+					setNumber(cursorSelectedNumber, -numberValues[cursorSelectedNumber])
+					numberCaptureCursor(cursorSelectedNumber)
+				elif "0123456789".contains(character):
+					setNumber(cursorSelectedNumber, character.to_int())
+					Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberEnds[cursorSelectedNumber]))
+					Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", cursorStart))
+					cursorMode = CURSOR_MODE.NORMAL
+					placeCursor()
+				else: return false
+	else: return false
 	return true
 
+func _gui_input(event:InputEvent) -> void:
+	if event is not InputEventMouse: return
+	var mouseIndex:int = ts.shaped_text_hit_test_position(shapedText, event.position.x)
+	if event is InputEventMouseMotion or event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if Editor.isLeftClick(event):
+			if context.interacted != self: context.interact(self)
+			mouseDragStart = mouseIndex
+		if mouseDragStart != -1:
+			var mouseDragEnd:int = mouseIndex
+			if mouseDragEnd > mouseDragStart:
+				cursorStart = mouseDragStart
+				cursorEnd = mouseDragEnd
+			else:
+				cursorStart = mouseDragEnd
+				cursorEnd = mouseDragStart
+			cursorMode = CURSOR_MODE.NORMAL
+			placeCursor()
+		if Editor.isLeftUnclick(event):
+			mouseDragStart = -1
+			if cursorStart == cursorEnd: numberCaptureCursor(numberAtIndex(mouseIndex, true))
+	var numberAtMouse:int = numberAtIndex(mouseIndex, true)
+	var tooFar:bool = event.position.x > ts.shaped_text_get_width(shapedText)
+	mouse_default_cursor_shape = Control.CURSOR_VSPLIT if mouseDragStart == -1 and numberAtMouse != -1 and !tooFar else Control.CURSOR_IBEAM
+	if numberAtMouse != -1 and event is InputEventMouseButton and event.pressed and !tooFar:
+		match event.button_index:
+			MOUSE_BUTTON_WHEEL_UP: changeNumber(numberAtMouse, 1)
+			MOUSE_BUTTON_WHEEL_DOWN: changeNumber(numberAtMouse, -1)
+			_: return
+		get_viewport().set_input_as_handled()
+		numberCaptureCursor(numberAtMouse)
+		placeCursor()
+
+
+# not sure how powerful i want these to be
 ## for ctrl+right
 func nextPointOfInterest() -> int:
-	var pointOfInterest:int = textLen
-	for number in numbers:
-		if numberEnds[number] > cursorEnd: pointOfInterest = min(numberEnds[number], pointOfInterest)
-		if numberStarts[number] > cursorEnd: pointOfInterest = min(numberStarts[number], pointOfInterest)
-	return pointOfInterest
+	return textLen
+	#var pointOfInterest:int = textLen
+	#for number in numbers:
+	#	if numberEnds[number] > cursorEnd: pointOfInterest = min(numberEnds[number], pointOfInterest)
+	#	if numberStarts[number] > cursorEnd: pointOfInterest = min(numberStarts[number], pointOfInterest)
+	#return pointOfInterest
 
 ## for ctrl+left
 func previousPointOfInterest() -> int:
-	var pointOfInterest:int = 0
-	for number in numbers:
-		if numberEnds[number] < cursorStart: pointOfInterest = max(numberEnds[number], pointOfInterest)
-		if numberStarts[number] < cursorStart: pointOfInterest = max(numberStarts[number], pointOfInterest)
-	return pointOfInterest
+	return 0
+	#var pointOfInterest:int = 0
+	#for number in numbers:
+	#	if numberEnds[number] < cursorStart: pointOfInterest = max(numberEnds[number], pointOfInterest)
+	#	if numberStarts[number] < cursorStart: pointOfInterest = max(numberStarts[number], pointOfInterest)
+	#return pointOfInterest
 
 func changeNumber(number:int, by:int) -> void:
 	if numberSemiNegative[number]: setNumber(number, numberValues[number] - by)
@@ -477,15 +531,21 @@ func numberCheckSign(number:int, to:int) -> int:
 		return -to
 	return to
 
-func numberCaptureCursor(fromPosition:int) -> void:
-	for number in numbers:
-		if fromPosition >= numberStarts[number] and fromPosition <= numberEnds[number]:
-			Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberStarts[number]))
-			Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", numberEnds[number]))
-			Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorSelectedNumber", number))
-			Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorMode", CURSOR_MODE.NUMBER))
-			placeCursor()
-			return
+func numberCaptureCursor(number:int) -> void:
+	if number == -1: return
+	Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorStart", numberStarts[number]))
+	Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorEnd", numberEnds[number]))
+	Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorSelectedNumber", number))
+	Changes.addChange(Changes.GlobalPropertyChange.new(self, &"cursorMode", CURSOR_MODE.NUMBER))
+	placeCursor()
+
+## returns the index of the number at the index, or -1 if not found
+func numberAtIndex(index:int, strict:bool=false) -> int:
+	if strict:
+		for number in numbers: if index > numberStarts[number] and index <= numberEnds[number]: return number
+	else:
+		for number in numbers: if index >= numberStarts[number] and index <= numberEnds[number]: return number
+	return -1
 
 func placeCursor() -> void:
 	cursorStart = clamp(cursorStart, 0, len(text))

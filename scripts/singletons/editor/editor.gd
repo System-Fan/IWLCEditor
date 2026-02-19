@@ -466,8 +466,9 @@ func _input(event:InputEvent) -> void:
 					KEY_TAB: otherObjects._searchSubmitted()
 				return
 			if focusDialog.interacted and focusDialog.interacted.receiveKey(event): return
-			if focusDialog.focused and focusDialog.receiveKey(event): return
-			if eventIs(event, &"editStartPlaytest") and !topBar.play.disabled: await get_tree().process_frame; Game.playTest(Game.levelStart)
+			elif focusDialog.focused and focusDialog.receiveKey(event): return
+			elif focusDialog.interacted and focusDialog.interacted.receiveUnhandledKey(event): return
+			elif eventIs(event, &"editStartPlaytest") and !topBar.play.disabled: await get_tree().process_frame; Game.playTest(Game.levelStart)
 			elif eventIs(event, &"editStartPlaytestFromState") and !topBar.play.disabled: await get_tree().process_frame; Game.playTest(Game.latestSpawn)
 			elif eventIs(event, &"editStopPlaytest") and Game.playState == Game.PLAY_STATE.PAUSED: Game.stopTest()
 			elif eventIs(event, &"editModeSelect"): modes.setMode(MODE.SELECT); focusDialog.defocus(); componentDragged = null; multiselect.deselect()

@@ -9,6 +9,7 @@ custom_minimum_size = Vector2(70, 18)
 offset_right = 70.0
 offset_bottom = 18.0
 size_flags_horizontal = 3
+mouse_default_cursor_shape = 1
 theme = ExtResource("1_r568y")
 theme_type_variation = &"NumberEditPanelContainer"
 script = ExtResource("2_xys7f")
@@ -16,6 +17,7 @@ script = ExtResource("2_xys7f")
 [node name="c" type="Control" parent="." unique_id=1333043490]
 clip_contents = true
 layout_mode = 2
+mouse_filter = 2
 
 [node name="drawText" type="RichTextLabel" parent="c" unique_id=629152934]
 unique_name_in_owner = true
@@ -23,6 +25,7 @@ layout_mode = 0
 offset_top = -2.0
 offset_right = 139.0
 offset_bottom = 16.0
+mouse_filter = 2
 theme_override_colors/default_color = Color(0.5783495, 0.57834953, 0.5783495, 1)
 theme_override_fonts/normal_font = ExtResource("3_sax1w")
 bbcode_enabled = true
@@ -36,4 +39,5 @@ visible = false
 layout_mode = 0
 offset_right = 1.0
 offset_bottom = 14.0
+mouse_filter = 2
 color = Color(0, 1, 1, 0.6666667)

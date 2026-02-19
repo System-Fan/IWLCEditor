@@ -40,7 +40,6 @@ func _back():
 
 func _saveChanges():
 	if Game.playState != Game.PLAY_STATE.EDIT: Game.stopTest()
-	Game.editor.focusDialog.defocus()
 	Changes.addChange(Changes.GlobalPropertyChange.new(Mods,&"activeModpack",tempActiveModpack))
 	Changes.addChange(Changes.GlobalPropertyChange.new(Mods,&"activeVersion",tempActiveVersion))
 	for mod in Mods.mods.values():
@@ -60,6 +59,8 @@ func _saveChanges():
 		for color in Game.COLORS:
 			if color in availableColors: continue
 			playerSpawn.resetColor(color)
+	
+	if Game.editor.focusDIalog.interacted: Game.editor.focusDialog.interact(Game.editor.focusDialog.interacted)
 
 	Changes.bufferSave()
 	Game.editor.grab_focus()

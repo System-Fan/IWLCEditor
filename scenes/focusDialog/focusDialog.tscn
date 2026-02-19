@@ -438,7 +438,7 @@ toggle_mode = true
 icon = ExtResource("21_drywk")
 metadata/explanation = SubResource("Resource_16i1m")
 
-[node name="oscillate" type="Button" parent="doorDialog/c/lock/c/c/doorBooleans" unique_id=733062959]
+[node name="doorOscillate" type="Button" parent="doorDialog/c/lock/c/c/doorBooleans" unique_id=733062959]
 layout_mode = 2
 toggle_mode = true
 icon = ExtResource("20_2wjug")

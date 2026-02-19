@@ -50,7 +50,7 @@ const CREATE_PARAMETERS:Array[StringName] = [
 const PROPERTIES:Array[StringName] = [
 	&"id", &"position", &"size",
 	&"colorSpend", &"copies", &"infCopies", &"type",
-	&"frozen", &"crumbled", &"painted"
+	&"frozen", &"crumbled", &"painted", &"oscillate"
 ]
 static var ARRAYS:Dictionary[StringName,Variant] = {
 	&"remoteLocks":RemoteLock

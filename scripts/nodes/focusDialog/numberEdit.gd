@@ -449,7 +449,8 @@ func receiveUnhandledKey(key:InputEventKey) -> bool:
 
 func _gui_input(event:InputEvent) -> void:
 	if event is not InputEventMouse: return
-	var mouseIndex:int = ts.shaped_text_hit_test_position(shapedText, event.position.x)
+	var mouseX:float = event.position.x - %drawText.position.x
+	var mouseIndex:int = ts.shaped_text_hit_test_position(shapedText, mouseX)
 	if event is InputEventMouseMotion or event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if Editor.isLeftClick(event):
 			if context.interacted != self: context.interact(self)
@@ -468,7 +469,7 @@ func _gui_input(event:InputEvent) -> void:
 			mouseDragStart = -1
 			if cursorStart == cursorEnd: numberCaptureCursor(numberAtIndex(mouseIndex, true))
 	var numberAtMouse:int = numberAtIndex(mouseIndex, true)
-	var tooFar:bool = event.position.x > ts.shaped_text_get_width(shapedText)
+	var tooFar:bool = mouseX > ts.shaped_text_get_width(shapedText)
 	mouse_default_cursor_shape = Control.CURSOR_VSPLIT if mouseDragStart == -1 and numberAtMouse != -1 and !tooFar else Control.CURSOR_IBEAM
 	if numberAtMouse != -1 and event is InputEventMouseButton and event.pressed and !tooFar:
 		match event.button_index:
@@ -552,3 +553,8 @@ func placeCursor() -> void:
 	cursorEnd = clamp(cursorEnd, 0, len(text))
 	%cursor.position.x = FNUMBEREDIT.get_string_size(text.substr(0,cursorStart)).x - 1
 	%cursor.size.x = FNUMBEREDIT.get_string_size(text.substr(0,cursorEnd)).x - %cursor.position.x + 1
+	var cursorEndPos:float = %cursor.position.x + %cursor.size.x
+	if cursorEndPos + %drawText.position.x + 20 > size.x:
+		%drawText.position.x = size.x - cursorEndPos - 20
+	if %cursor.position.x + %drawText.position.x < 20:
+		%drawText.position.x = min(0, -%cursor.position.x + 20)

@@ -60,7 +60,7 @@ func _saveChanges():
 			if color in availableColors: continue
 			playerSpawn.resetColor(color)
 	
-	if Game.editor.focusDIalog.interacted: Game.editor.focusDialog.interact(Game.editor.focusDialog.interacted)
+	if Game.editor.focusDialog.interacted: Game.editor.focusDialog.interact(Game.editor.focusDialog.interacted)
 
 	Changes.bufferSave()
 	Game.editor.grab_focus()

@@ -59,7 +59,7 @@ static var mods:Dictionary[StringName, Mod] = {
 	),
 	&"ExactLocks": Mod.new(
 		"Exact Locks",
-		"Adds the Partial Blast type for Locks from world 3 of IWL:C",
+		"Adds the Exact type for Locks from world 3 of IWL:C",
 		[&"ExactLock"]
 	),
 	&"DarkAuraColors": Mod.new(

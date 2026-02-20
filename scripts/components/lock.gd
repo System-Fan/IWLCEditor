@@ -243,7 +243,7 @@ static func drawLock(lockDrawScaled:RID, lockDrawAuraBreaker:RID, lockDrawGlitch
 				if lockType == TYPE.EXACT and !showLock: string = "=" + string
 				var vertical:bool = lockSize.x == 18 && lockSize.y != 18 && string != ""
 
-				var symbolLast:bool = (lockType == TYPE.EXACT or lockType == TYPE.GLISTENING) and M.isNonzeroImag(lockCount) and !vertical
+				var symbolLast:bool = (lockType == TYPE.EXACT or lockType == TYPE.GLISTENING) and (M.isNonzeroImag(lockCount) or lockZeroI) and !vertical
 				if showLock and !vertical:
 					if (lockType == TYPE.EXACT):
 						if symbolLast: lockOffsetX = 6
@@ -509,7 +509,7 @@ func effectiveCount(ipow:PackedInt64Array=parent.ipow()) -> PackedInt64Array:
 func effectiveDenominator(ipow:PackedInt64Array=parent.ipow()) -> PackedInt64Array:
 	return M.times(denominator, ipow)
 
-func effectiveZeroI() -> bool: return zeroI and M.isNonzeroReal(parent.ipow())
+func effectiveZeroI() -> bool: return (zeroI != M.isNonzeroImag(parent.ipow())) and M.nex(count)
 
 func isNegative() -> bool:
 	if type in [TYPE.BLAST, TYPE.ALL]:

@@ -9,4 +9,4 @@ func _init(path:String,_frames:int) -> void:
 	if frames == 1: textures.append(load(path))
 	else: for i in frames: textures.append(load(path.replace(".",str(i)+".")))
 
-func current(_params:Array=[]) -> Texture2D: return textures[Game.goldIndex % frames]
+func current(params:Array=[]) -> Texture2D: return textures[params.pop_front()]

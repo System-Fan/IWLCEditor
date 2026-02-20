@@ -504,9 +504,9 @@ func tryOpen(player:Player) -> void:
 			cost = M.add(cost, lock.getCost(player))
 	for lock in remoteLocks:
 		if lock.type == Lock.TYPE.GLISTENING:
-			glistenCost = M.add(cost, lock.getCost(player))
+			glistenCost = M.add(cost, lock.cost)
 		else:
-			cost = M.add(cost, lock.getCost(player))
+			cost = M.add(cost, lock.cost)
 	
 	var spendColor:Game.COLOR = colorAfterAurabreaker()
 	player.changeGlisten(spendColor, M.sub(player.glisten[spendColor], glistenCost))

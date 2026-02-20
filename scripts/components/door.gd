@@ -275,10 +275,10 @@ func propertyChangedInit(property:StringName) -> void:
 						removeLock(lockIndex)
 				locks[0]._simpleDoorUpdate()
 			TYPE.COMBO:
-				if !Mods.active(&"NstdLockSize"):
+				if !Mods.active(&"MoreLockSizes"):
 					for lock in locks: lock._coerceSize()
 			TYPE.GATE:
-				if !Mods.active(&"NstdLockSize"):
+				if !Mods.active(&"MoreLockSizes"):
 					for lock in locks: lock._coerceSize()
 				Changes.addChange(Changes.PropertyChange.new(self,&"colorSpend",Game.COLOR.WHITE))
 				Changes.addChange(Changes.PropertyChange.new(self,&"copies",M.ONE))

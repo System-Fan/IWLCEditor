@@ -321,7 +321,7 @@ func stopDrag() -> void:
 		componentDragged = null
 		return
 	if sizeDragging():
-		if !Mods.active(&"NstdLockSize") and componentDragged is Lock and componentDragged.parent.type != Door.TYPE.SIMPLE:
+		if !Mods.active(&"MoreLockSizes") and componentDragged is Lock and componentDragged.parent.type != Door.TYPE.SIMPLE:
 			componentDragged._coerceSize()
 		if componentDragged is GameObject: focusDialog.focus(componentDragged)
 		else: focusDialog.focusComponent(componentDragged)
@@ -381,7 +381,7 @@ func dragComponent() -> void: # returns whether or not an object is being dragge
 	var bounds:Rect2
 	var allowOutOfBounds:bool = Mods.active(&"OutOfBounds")
 	if componentDragged is Lock:
-		allowOutOfBounds = (Mods.active(&"C1") and dragMode == DRAG_MODE.POSITION) or Mods.active(&"DisconnectedLock")
+		allowOutOfBounds = (Mods.active(&"RemoteLocks") and dragMode == DRAG_MODE.POSITION) or Mods.active(&"DisconnectedLocks")
 		bounds = Rect2(componentDragged.getOffset(), componentDragged.parent.size)
 	else: bounds = Game.levelBounds
 	var innerBounds:Rect2 = bounds.grow(-1) # require strictly within
@@ -398,7 +398,7 @@ func dragComponent() -> void: # returns whether or not an object is being dragge
 				if !bounds.intersects(goingTo):
 					if !allowOutOfBounds:
 						dragOffset += snappedAway(Vector2.ZERO.max(innerBounds.position - goingTo.end) - Vector2.ZERO.max(goingTo.position - innerBounds.end), Vector2(tileSize))
-					elif componentDragged is Lock and Mods.active(&"C1") and !Mods.active(&"DisconnectedLock"): lockBufferConvert = true
+					elif componentDragged is Lock and Mods.active(&"RemoteLocks") and !Mods.active(&"DisconnectedLocks"): lockBufferConvert = true
 				previousDragPosition += dragOffset
 				Changes.addChange(Changes.PropertyChange.new(componentDragged,&"position", componentDragged.position + dragOffset))
 		DRAG_MODE.SIZE_DIAG, DRAG_MODE.SIZE_VERT, DRAG_MODE.SIZE_HORIZ:

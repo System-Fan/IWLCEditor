@@ -7,11 +7,11 @@ class_name SelectMods
 
 # the way the select tree is laid out
 static var ModTree:Array = [
-	&"PartialInfKey", &"Glistening", &"OperatorKey",
+	&"PartialInfKeys", &"Glistening", &"OperatorKeys",
 	SubTree.new(
 		"Benign",
 		"Mods that don't do much.",
-		[&"NstdLockSize",&"MoreLockConfigs",&"ZeroCostLock",&"ZeroCopies",&"MoreKeyCounterWidths"]
+		[&"MoreLockSizes",&"MoreLockConfigs",&"ZeroCostLocks",&"ZeroCopyDoors",&"MoreKeyCounterWidths"]
 	),
 	SubTree.new(
 		"Systems",
@@ -21,17 +21,17 @@ static var ModTree:Array = [
 	SubTree.new(
 		"I Wanna Lockpick: Continued",
 		"Mods that were made for the I Wanna Lockpick: Continued modpack.",
-		[&"C1",&"C2",&"C3",&"C4",&"C5"]
+		[&"RemoteLocks",&"NegatedLocks", &"DynamiteColor",&"QuicksilverColor", &"PartialBlastLocks",&"ExactLocks", &"DarkAuraColors",&"AuraBreakerColors", &"CurseKeys",&"Armaments"]
 	),
 	SubTree.new(
 		"Lockpick Editor Compatibility",
 		"Mods to mimic unique behaviour from L4Vo5's Lockpick Editor",
-		[&"InfCopies",&"NoneColor"]
+		[&"InfCopyDoors",&"NoneColor"]
 	),
 	SubTree.new(
 		"Possibly Misleading",
 		"Surely this is a good idea",
-		[&"DisconnectedLock",&"OutOfBounds"]
+		[&"DisconnectedLocks",&"OutOfBounds"]
 	),
 ]
 

@@ -407,12 +407,12 @@ func propertyChangedInit(property:StringName) -> void:
 
 static func lockPropertyChangedInit(lock:GameComponent, property:StringName) -> void:
 	if property == &"type":
-		if (lock.type == TYPE.BLANK or (lock.type == TYPE.ALL and !Mods.active(&"C3"))) and M.neq(lock.count, M.ONE):
+		if (lock.type == TYPE.BLANK or (lock.type == TYPE.ALL and !Mods.active(&"PartialBlastLocks"))) and M.neq(lock.count, M.ONE):
 			Changes.addChange(Changes.PropertyChange.new(lock,&"count",M.ONE))
 		if lock.type != TYPE.EXACT and lock.zeroI:
 			Changes.addChange(Changes.PropertyChange.new(lock,&"zeroI",false))
 		if lock.type == TYPE.BLAST:
-			if !Mods.active(&"C3"):
+			if !Mods.active(&"PartialBlastLocks"):
 				if M.neq(M.abs(lock.count), M.ONE): Changes.addChange(Changes.PropertyChange.new(lock,&"count",M.saxis(lock.count)))
 				if M.neq(M.axis(lock.denominator), M.axis(lock.count)): Changes.addChange(Changes.PropertyChange.new(lock,&"denominator", M.axis(lock.count)))
 		elif lock.type == TYPE.ALL:

@@ -245,7 +245,7 @@ func loadFile(path:String, immediate:bool=false) -> OpenWindow:
 		return null
 	openWindow.level = file.get_var(true)
 	openWindow.screenshot = file.get_var(true)
-	openWindow.mods = file.get_var()
+	openWindow.mods = migrateModNames(file.get_var(), formatVersion)
 	var modpackId:StringName = file.get_var()
 	if modpackId:
 		openWindow.modpack = Mods.modpacks[modpackId]
@@ -257,6 +257,25 @@ func loadFile(path:String, immediate:bool=false) -> OpenWindow:
 		@warning_ignore("integer_division") if !OS.has_feature("web"): openWindow.position = get_window().position+(get_window().size-openWindow.size)/2
 		editor.add_child(openWindow)
 	return openWindow
+
+func migrateModNames(mods:Array[StringName], formatVersion:int) -> Array[StringName]:
+	if formatVersion < 3:
+		var toReturn:Array[StringName] = []
+		for mod in mods:
+			match mod:
+				&"NstdLockSize": toReturn.append(&"MoreLockSizes")
+				&"ZeroCopies": toReturn.append(&"ZeroCopyDoors")
+				&"ZeroCostLock": toReturn.append(&"ZeroCostLocks")
+				&"InfCopies": toReturn.append(&"InfCopyDoors")
+				&"C1": toReturn.append_array([&"RemoteLocks", &"NegatedLocks"])
+				&"C2": toReturn.append_array([&"DynamiteColor", &"QuicksilverColor"])
+				&"C3": toReturn.append_array([&"PartialBlastLocks", &"ExactLocks"])
+				&"C4": toReturn.append_array([&"DarkAuraColors", &"AuraBreakerColors"])
+				&"C5": toReturn.append_array([&"CurseKeys", &"Armaments"])
+				&"DisconnectedLock": toReturn.append(&"DisconnectedLocks")
+				_: toReturn.append(mod)
+		return toReturn
+	return mods
 
 func loadJs(result) -> void:
 	var buffer:PackedByteArray = Marshalls.base64_to_raw(result[0])

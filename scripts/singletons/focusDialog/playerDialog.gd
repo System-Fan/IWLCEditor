@@ -51,7 +51,7 @@ func receiveKey(event:InputEvent) -> bool:
 	return true
 
 func changedMods() -> void:
-	%playerCurse.visible = Mods.active(&"C5")
+	%playerCurse.visible = Mods.active(&"CurseKeys")
 	%playerKeyGlistenCont.visible = Mods.active(&"Glistening")
 
 func _playerKeyCountSet(value:PackedInt64Array) -> void:

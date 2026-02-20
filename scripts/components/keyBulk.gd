@@ -219,7 +219,7 @@ func propertyChangedInit(property:StringName) -> void:
 		if type not in [TYPE.NORMAL, TYPE.EXACT] and M.neq(count, M.ONE): Changes.addChange(Changes.PropertyChange.new(self,&"count",M.ONE))
 		if type not in [TYPE.STAR, TYPE.CURSE] and un: Changes.addChange(Changes.PropertyChange.new(self,&"un",false))
 		if type != TYPE.ROTOR: Changes.addChange(Changes.PropertyChange.new(self,&"reciprocal",false))
-		if type == TYPE.OPERATOR: Changes.addChange(Changes.PropertyChange.new(self,&"altColor",color))
+		Changes.addChange(Changes.PropertyChange.new(self,&"altColor",color))
 	if property == &"reciprocal":
 		if reciprocal and M.eq(count, M.nONE): Changes.addChange(Changes.PropertyChange.new(self,&"count",M.ONE))
 		if !reciprocal and M.eq(count, M.ONE): Changes.addChange(Changes.PropertyChange.new(self,&"count",M.nONE))

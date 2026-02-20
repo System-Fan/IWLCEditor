@@ -25,29 +25,31 @@ func setTexts() -> void:
 
 func getProblemName() -> String:
 	match [modId, type]:
-		[&"NstdLockSize", &"NstdLockSize"]: return "Nonstandard Lock Size"
+		[&"MoreLockSizes", &"NstdLockSize"]: return "Nonstandard Lock Size"
 		[&"MoreLockConfigs", &"NstdLockConfig"]: return "Nonstandard Lock Configuration"
-		[&"ZeroCopies",&"ZeroCopies"]: return "Zero Copy Door"
-		[&"ZeroCostLock",&"ZeroCostLock"]: return "Zero Cost Lock"
-		[&"InfCopies",&"InfCopies"]: return "Infinite Copy Door"
-		[&"NoneColor",&"NoneColor"]: return "None Color"
+		[&"ZeroCopyDoors",&"ZeroCopyDoor"]: return "Zero Copy Door"
+		[&"ZeroCostLocks",&"ZeroCostLock"]: return "Zero Cost Lock"
+		[&"InfCopyDoors",&"InfCopyDoor"]: return "Infinite Copy Door"
+		[&"NoneColor",&"NoneColorUsed"]: return "None Color Used"
 
-		[&"C1", &"RemoteLock"]: return "Remote Lock"
-		[&"C1", &"LockNegated"]: return "Negated Lock"
-		[&"C2", &"DynamiteColor"]: return "Dynamite Color"
-		[&"C2", &"QuicksilverColor"]: return "Quicksilver Color"
-		[&"C3", &"PartialBlastLock"]: return "Partial Blast Lock"
-		[&"C3", &"ExactLock"]: return "Exact Lock"
-		[&"C4", &"DarkAuraColor"]: return "Dark Aura Color"
-		[&"C4", &"AuraBreakerColor"]: return "Aura Breaker Color"
-		[&"C5", &"CurseKeyType"]: return "Curse/Decurse Key"
-		[&"C5", &"LockArmament"]: return "Lock Armament"
+		[&"RemoteLocks", &"RemoteLock"]: return "Remote Lock"
+		[&"NegatedLocks", &"NegatedLock"]: return "Negated Lock"
+		[&"DynamiteColor", &"DynamiteColorUsed"]: return "Dynamite Color Used"
+		[&"QuicksilverColor", &"QuicksilverColorUsed"]: return "Quicksilver Color Used"
+		[&"PartialBlastLocks", &"PartialBlastLock"]: return "Partial Blast Lock"
+		[&"ExactLocks", &"ExactLock"]: return "Exact Lock"
+		[&"DarkAuraColors", &"DarkAuraColorUsed"]: return "Dark Aura Color Used"
+		[&"AuraBreakerColors", &"AuraBreakerColorUsed"]: return "Aura Breaker Color Used"
+		[&"CurseKeys", &"CurseKey"]: return "Curse/Decurse Key"
+		[&"Armaments", &"LockArmament"]: return "Lock Armament"
 
-		[&"DisconnectedLock", &"DisconnectedLock"]: return "Disconnected Lock"
+		[&"DisconnectedLocks", &"DisconnectedLock"]: return "Disconnected Lock"
 		[&"OutOfBounds", &"OutOfBounds"]: return "Object Out of Bounds"
 		
-		[&"PartialInfKey", &"PartialInfKey"]: return "Partial Infinite Key"
+		[&"PartialInPartialInfKeysfKey", &"PartialInfKey"]: return "Partial Infinite Key"
 		[&"MoreKeyCounterWidths", &"NstdKeyCounterWidth"]: return "Nonstandard Key Counter Width"
+		[&"OperatorKeys", &"OperatorKey"]: return "Operator Key"
+		[&"OperatorKeys", &"ReciprocalKey"]: return "Reciprocal Key"
 	return "Somebody forgot to set the ProblemDisplay text for this error :)"
 
 func showInstance(index:int) -> void:

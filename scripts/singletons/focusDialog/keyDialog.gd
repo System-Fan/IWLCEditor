@@ -15,16 +15,15 @@ func focus(focused:KeyBulk, new:bool, _dontRedirect:bool) -> void:
 	if new: %keyCountEdit.setValue(focused.count)
 	%keyInfiniteToggle.button_pressed = focused.infinite
 	%keyGlisteningToggle.button_pressed = focused.glistening
-	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and focused.infinite
+	%keyPartialInfinite.visible = Mods.active(&"PartialInfKeys") and focused.infinite
 	if new: %keyPartialInfiniteEdit.setValue(M.N(focused.infinite))
 	%keyOperationSelector.visible = focused.type == KeyBulk.TYPE.OPERATOR
 	%keyOperationSelector.setSelect(focused.operation)
-	%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and focused.infinite
 	%keyRotorSelector.visible = focused.type == KeyBulk.TYPE.ROTOR
 	%keyUn.visible = focused.type in [KeyBulk.TYPE.STAR, KeyBulk.TYPE.CURSE]
 	%keyUn.button_pressed = !focused.un
 	%keyRotorSelector.setup(focused)
-	%keyReciprocal.visible = focused.type == KeyBulk.TYPE.ROTOR && Mods.active(&"OperatorKey")
+	%keyReciprocal.visible = focused.type == KeyBulk.TYPE.ROTOR && Mods.active(&"OperatorKeys")
 	setKeyUnIcon()
 	if focused.type == KeyBulk.TYPE.ROTOR: %keyRotorSelector.setValue(focused.count)
 	if main.interacted and !main.interacted.is_visible_in_tree(): main.deinteract()
@@ -53,7 +52,7 @@ func receiveKey(event:InputEventKey) -> bool:
 		elif M.eq(main.focused.count, M.nONE): _keyCountSet(M.I)
 		elif M.eq(main.focused.count, M.I): _keyCountSet(M.nI)
 		elif M.eq(main.focused.count, M.nI): _keyTypeSelected(KeyBulk.TYPE.NORMAL); _keyCountSet(M.ONE)
-	elif Editor.eventIs(event, &"focusKeyCurse") and Mods.active(&"C5"):
+	elif Editor.eventIs(event, &"focusKeyCurse") and Mods.active(&"CurseKeys"):
 			if main.focused.type == KeyBulk.TYPE.CURSE: Changes.PropertyChange.new(main.focused,&"un",!main.focused.un)
 			else: _keyTypeSelected(KeyBulk.TYPE.CURSE)
 	elif Editor.eventIs(event, &"focusKeyOperator"): _keyTypeSelected(KeyBulk.TYPE.OPERATOR if main.focused.type != KeyBulk.TYPE.OPERATOR else KeyBulk.TYPE.NORMAL)
@@ -67,7 +66,7 @@ func changedMods() -> void:
 	%keyGlisteningToggle.visible = Mods.active(&"Glistening")
 	if main.focused is KeyBulk:
 		%keyPartialInfinite.visible = Mods.active(&"PartialInfKey") and main.focused.infinite
-		%keyReciprocal.visible = main.focused.type == KeyBulk.TYPE.ROTOR && Mods.active(&"OperatorKey")
+		%keyReciprocal.visible = main.focused.type == KeyBulk.TYPE.ROTOR && Mods.active(&"OperatorKeys")
 
 func _keyColorSelected(color:Game.COLOR) -> void:
 	if main.focused is not KeyBulk: return

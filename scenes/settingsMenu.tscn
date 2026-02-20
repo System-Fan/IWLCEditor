@@ -708,13 +708,13 @@ action = &"focusKeyRotor"
 layout_mode = 2
 label = "Toggle Curse Type"
 action = &"focusKeyCurse"
-prerequisite = &"C5"
+prerequisite = &"CurseKeys"
 
 [node name="focusKeyOperator" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c" unique_id=427433704 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Set Operator Type"
 action = &"focusKeyOperator"
-prerequisite = &"OperatorKey"
+prerequisite = &"OperatorKeys"
 
 [node name="focusKeyInfinite" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c" unique_id=116495567 instance=ExtResource("6_dkncv")]
 layout_mode = 2
@@ -744,37 +744,37 @@ layout_mode = 2
 layout_mode = 2
 label = "Set Set Operation"
 action = &"focusKeyOperationSet"
-prerequisite = &"OperatorKey"
+prerequisite = &"OperatorKeys"
 
 [node name="focusKeyOperationAdd" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=2059242794 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Set Add Operation"
 action = &"focusKeyOperationAdd"
-prerequisite = &"OperatorKey"
+prerequisite = &"OperatorKeys"
 
 [node name="focusKeyOperationSubtract" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=164499111 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Set Subtract Operation"
 action = &"focusKeyOperationSubtract"
-prerequisite = &"OperatorKey"
+prerequisite = &"OperatorKeys"
 
 [node name="focusKeyOperationMultiply" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=1863308533 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Set Multiply Operation"
 action = &"focusKeyOperationMultiply"
-prerequisite = &"OperatorKey"
+prerequisite = &"OperatorKeys"
 
 [node name="focusKeyOperationDivide" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=2032659825 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Set Divide Operation"
 action = &"focusKeyOperationDivide"
-prerequisite = &"OperatorKey"
+prerequisite = &"OperatorKeys"
 
 [node name="focusKeyOperationModulo" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/keyFocused/c/operatorKeyFocused/c" unique_id=1128080105 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Set Modulo Operation"
 action = &"focusKeyOperationModulo"
-prerequisite = &"OperatorKey"
+prerequisite = &"OperatorKeys"
 
 [node name="l2" type="Label" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c" unique_id=372084689]
 layout_mode = 2
@@ -866,7 +866,7 @@ action = &"focusLockAll"
 layout_mode = 2
 label = "Set Exact Type"
 action = &"focusLockExact"
-prerequisite = &"C3"
+prerequisite = &"ExactLocks"
 
 [node name="focusLockGlistening" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/doorFocused/c/editingLockProperties/c" unique_id=1770787322 instance=ExtResource("6_dkncv")]
 layout_mode = 2
@@ -878,19 +878,19 @@ prerequisite = &"Glistening"
 layout_mode = 2
 label = "Toggle Negated"
 action = &"focusLockNegated"
-prerequisite = &"C1"
+prerequisite = &"NegatedLocks"
 
 [node name="focusLockArmament" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/doorFocused/c/editingLockProperties/c" unique_id=2064461687 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Toggle Armament"
 action = &"focusLockArmament"
-prerequisite = &"C5"
+prerequisite = &"Armaments"
 
 [node name="focusLockConvertRemote" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/doorFocused/c/editingLockProperties/c" unique_id=591455256 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Convert To Remote Lock"
 action = &"focusLockConvertRemote"
-prerequisite = &"C1"
+prerequisite = &"RemoteLocks"
 
 [node name="quicksetLockSize" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/doorFocused/c/editingLockProperties/c" unique_id=267433418 instance=ExtResource("6_dkncv")]
 layout_mode = 2
@@ -956,7 +956,7 @@ layout_mode = 2
 layout_mode = 2
 label = "Add Connection"
 action = &"focusRemoteLockAddConnection"
-prerequisite = &"C1"
+prerequisite = &"RemoteLocks"
 
 [node name="l5" type="Label" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c" unique_id=1574871636]
 layout_mode = 2
@@ -984,7 +984,7 @@ action = &"focusPlayerStar"
 layout_mode = 2
 label = "Toggle Curse"
 action = &"focusPlayerCurse"
-prerequisite = &"C5"
+prerequisite = &"CurseKeys"
 
 [node name="focusPlayerSavestate" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/playerFocused/c" unique_id=752465013 instance=ExtResource("6_dkncv")]
 layout_mode = 2

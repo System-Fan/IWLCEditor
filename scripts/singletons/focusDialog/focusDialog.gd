@@ -51,7 +51,6 @@ func defocus() -> void:
 	if !focused: return
 	var object:GameObject = focused
 	Game.editor.quickSet.applyOrCancel()
-	if object is Door and !Mods.active(&"ZeroCopies") and M.nex(object.copies): Changes.addChange(Changes.PropertyChange.new(object,&"copies",M.ONE))
 	focused = null
 	if object is RemoteLock: object.queue_redraw()
 	deinteract()
@@ -70,7 +69,6 @@ func focusComponent(component:GameComponent) -> void:
 
 func defocusComponent() -> void:
 	if !componentFocused: return
-	if componentFocused is Lock and !Mods.active(&"ZeroCostLock") and !(Mods.active(&"C3") and componentFocused.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL, Lock.TYPE.EXACT]) and M.nex(componentFocused.count): Changes.addChange(Changes.PropertyChange.new(componentFocused,&"count",M.ONE))
 	componentFocused = null
 	deinteract()
 	bufferFocus = false

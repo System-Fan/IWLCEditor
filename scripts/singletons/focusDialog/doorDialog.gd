@@ -20,6 +20,7 @@ func focus(focused:GameObject, new:bool, dontRedirect:bool) -> void: # Door or R
 		%painted.button_pressed = focused.painted
 		%realInfiniteCopy.button_pressed = M.ex(M.r(focused.infCopies))
 		%imaginaryInfiniteCopy.button_pressed = M.ex(M.i(focused.infCopies))
+		%doorCopiesEdit.allowZero = Mods.active(&"ZeroCopies")
 		if !main.componentFocused:
 			%lockSettings.visible = false
 			%doorAxialNumberEdit.visible = false
@@ -59,6 +60,7 @@ func focusComponent(component:GameComponent, new:bool) -> void: # Lock or Remote
 	%remoteLockConvert.visible = Mods.active(&"C1") and component is not RemoteLock
 
 	%doorAxialNumberEdit.visible = component.type == Lock.TYPE.NORMAL or component.type == Lock.TYPE.EXACT or component.type == Lock.TYPE.GLISTENING
+	%doorAxialNumberEdit.allowZero = Mods.active(&"ZeroCostLock") or (Mods.active(&"C3") and component.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL, Lock.TYPE.EXACT])
 	%doorAxialNumberEdit.allowZeroI = component.type == Lock.TYPE.EXACT
 	if new: %doorAxialNumberEdit.setValue(component.count)
 	if component.zeroI: %doorAxialNumberEdit.setZeroI()

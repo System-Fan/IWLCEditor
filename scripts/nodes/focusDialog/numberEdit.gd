@@ -63,7 +63,7 @@ func setZeroI() -> void:
 	buildText()
 
 func interact(last:bool=false) -> void:
-	theme_type_variation = &"NumberEditPanelContainerSelected"
+	theme_type_variation = &"NumberEditPanelContainerError" if expressionErrored else &"NumberEditPanelContainerSelected"
 	if numbers: numberCaptureCursor(numbers-1 if last else 0)
 	%cursor.visible = true
 
@@ -141,23 +141,19 @@ func parseText(manual:bool=false) -> void:
 func evaluate(manual:bool=false) -> void:
 	expressionErrored = false
 	result = evaluateExpression(currentExpression)
-	theme_type_variation = &"NumberEditPanelContainerSelected" if context.interacted == self else &"NumberEditPanelContainer"
 	isZeroI = allowZeroI and text == "0i"
-	if !allowZero and !isZeroI and M.nex(result): displayError()
-	elif !expressionErrored:
+	if !allowZero and !isZeroI and M.nex(result): expressionErrored = true
+	if !expressionErrored:
 		if !manual:
 			match type:
 				TYPE.ALL: valueSet.emit(result)
 				TYPE.AXIAL:
 					if M.isAxial(result): valueSet.emit(result)
-					else: displayError()
+					else: expressionErrored = true
 				TYPE.NONNEGATIVE_INTEGER:
 					if M.isReal(result) and M.isInteger(result) and M.gte(result, M.ZERO): valueSet.emit(result)
-					else: displayError()
-	else: displayError()
-
-func displayError() -> void:
-	theme_type_variation = &"NumberEditPanelContainerError"
+					else: expressionErrored = true
+	theme_type_variation = (&"NumberEditPanelContainerError" if expressionErrored else &"NumberEditPanelContainerSelected") if context.interacted == self else &"NumberEditPanelContainer"
 
 enum TOKEN {NUMBER, LBRACKET, RBRACKET, CROSS, DASH, X, SLASH, I, UNKNOWN}
 enum STEP {VALUE, BRACKET, AXIS, PRODUCT, SUM} # symbol in the parsing expression grammar

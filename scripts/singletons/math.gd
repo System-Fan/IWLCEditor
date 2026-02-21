@@ -163,12 +163,11 @@ func modulo(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
 	if nex(b): return ZERO
 	return sub(a,times(floorDivide(a,b),b))
 
-# if b is strictly real, only use real parts, vise versa for imaginary
-# has sign of a
-func partialremainder(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
-	if eq(i(b),ZERO): return remainder(r(a),r(b))
-	elif eq(r(b),ZERO): return remainder(r(a),r(b))
-	else: return remainder(a,b)
+## (a,b -> a p% b)
+## Only subtracts real multiples of b 
+func partialRemainder(a:PackedInt64Array, b:PackedInt64Array) -> PackedInt64Array:
+	if nex(b): return ZERO
+	return sub(a,times(r(trunc(divide(a,b))),b))
 
 ## a "along" the axes of b
 ## (a,b -> (r(a) * sign(r(b))) + (ir(a) * sign(ir(b)))i)

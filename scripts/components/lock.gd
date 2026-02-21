@@ -490,7 +490,7 @@ static func getLockCanOpen(lock:GameComponent,player:Player) -> bool:
 			else: can = M.eq(M.along(keyCount, lockCount), M.cabs(lockCount))
 		TYPE.GLISTENING: can = M.cgte(M.along(glistCount, lockCount), M.cabs(lockCount))
 		TYPE.REMAINDER:
-			can = M.neq(M.partialremainder(keyCount, lockCount),M.ZERO)
+			can = M.neq(M.partialRemainder(keyCount, lockCount),M.ZERO)
 	return can != lock.negated
 
 func getCost(player:Player, ipow:PackedInt64Array=parent.ipow()) -> PackedInt64Array: return getLockCost(self, player, ipow)
@@ -503,7 +503,7 @@ static func getLockCost(lock:GameComponent, player:Player, ipow:PackedInt64Array
 	match lock.type:
 		TYPE.NORMAL, TYPE.EXACT, TYPE.GLISTENING: cost = lockCount
 		TYPE.BLAST: if M.ex(lockDenominator): cost = M.divide(M.times(M.alongbs(keyCount, lockDenominator), lockCount), lockDenominator)
-		TYPE.REMAINDER: cost = M.partialremainder(keyCount, lockCount)
+		TYPE.REMAINDER: cost = M.partialRemainder(keyCount, lockCount)
 		TYPE.ALL: if M.ex(lockDenominator): cost = M.divide(M.times(keyCount, lockCount), lockDenominator)
 	if lock.negated: return M.negate(cost)
 	return cost

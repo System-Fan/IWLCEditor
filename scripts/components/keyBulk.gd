@@ -163,7 +163,7 @@ func _draw() -> void:
 				elif M.eq(count, M.I): RenderingServer.canvas_item_add_texture_rect(drawSymbol,rect,POSROTOR_SYMBOL)
 				elif M.eq(count, M.nI): RenderingServer.canvas_item_add_texture_rect(drawSymbol,rect,NEGROTOR_SYMBOL)
 		KeyBulk.TYPE.OPERATOR:
-			drawOperationSymbol(drawAdditional,drawAdditionalGlitch,Vector2.ZERO,altColor,operation,glitchMimic)
+			drawOperationSymbol(drawAdditional,drawAdditionalGlitch,Vector2.ZERO,baseAltColor(),operation,glitchMimic)
 	if infinite:
 		if glistening:
 			RenderingServer.canvas_item_add_texture_rect(drawSymbol,Rect2(Vector2(MULTITYPEOFFSET,-MULTITYPEOFFSET), size),INFINITE_SYMBOL)
@@ -269,8 +269,8 @@ func stop() -> void:
 
 func collect(player:Player) -> void:
 	if partialInfiniteCount: return
-	var collectColor:Game.COLOR = effectiveColor(color)
-	var collectAltColor:Game.COLOR = effectiveColor(altColor) # for operator
+	var collectColor:Game.COLOR = effectiveColor()
+	var collectAltColor:Game.COLOR = effectiveAltColor() # for operator
 
 	if glistening:
 		match type:
@@ -350,3 +350,11 @@ func baseColor() -> Game.COLOR:
 func effectiveColor() -> Game.COLOR:
 	if color == Game.COLOR.GLITCH: return glitchMimic
 	return baseColor()
+
+func baseAltColor() -> Game.COLOR:
+	if altColor == Game.COLOR.ERROR: return errorMimic
+	return altColor
+
+func effectiveAltColor() -> Game.COLOR:
+	if altColor == Game.COLOR.GLITCH: return glitchMimic
+	return baseAltColor()

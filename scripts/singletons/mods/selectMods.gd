@@ -19,9 +19,20 @@ static var ModTree:Array = [
 		[&"Fractions"]
 	),
 	SubTree.new(
-		"I Wanna Lockpick: Continued",
-		"Mods that were made for the I Wanna Lockpick: Continued modpack.",
-		[&"RemoteLocks",&"NegatedLocks", &"DynamiteColor",&"QuicksilverColor", &"PartialBlastLocks",&"ExactLocks", &"DarkAuraColors",&"AuraBreakerColors", &"CurseKeys",&"Armaments",&"RemainderLocks"]
+		"Modpacks",
+		"Mods that are based on community ideas.",
+		[
+			SubTree.new(
+				"I Wanna Lockpick: Continued",
+				"Mods that were made for the I Wanna Lockpick: Continued modpack.",
+				[&"RemoteLocks",&"NegatedLocks", &"DynamiteColor",&"QuicksilverColor", &"PartialBlastLocks",&"ExactLocks", &"DarkAuraColors",&"AuraBreakerColors", &"CurseKeys",&"Armaments",&"RemainderLocks"]
+			),
+			SubTree.new(
+				"Negative Worlds",
+				"(by Something) Wow.. it's like these worlds are negative,,, (so far its just error)",
+				[&"ErrorColor"]
+			),
+		]
 	),
 	SubTree.new(
 		"Lockpick Editor Compatibility",

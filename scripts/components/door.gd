@@ -38,6 +38,8 @@ const GLITCH_DARK:Texture2D = preload("res://assets/game/door/glitch/dark.png")
 
 static var GLITCH:ColorsTextureLoader = ColorsTextureLoader.new("res://assets/game/door/glitch/$c.png",Game.TEXTURED_COLORS, false, false, {capitalised=false})
 
+static var ERROR_FX:IndexTextureLoader = IndexTextureLoader.new("res://assets/game/key/error/fx.png", 3)
+
 const TEXTURE_RECT:Rect2 = Rect2(Vector2.ZERO,Vector2(64,64)) # size of all the door textures
 const CORNER_SIZE:Vector2 = Vector2(9,9) # size of door ninepatch corners
 const GLITCH_CORNER_SIZE:Vector2 = Vector2(16,16) # except glitchdraw is a different size
@@ -69,6 +71,7 @@ var drawScaled:RID # also draws aura breaker fills
 var drawAuraBreaker:RID
 var drawGlitch:RID
 var drawMain:RID
+var drawError:RID
 var drawCrumbled:RID
 var drawPainted:RID
 var drawFrozen:RID
@@ -91,6 +94,7 @@ func _ready() -> void:
 	drawAuraBreaker = RenderingServer.canvas_item_create()
 	drawGlitch = RenderingServer.canvas_item_create()
 	drawMain = RenderingServer.canvas_item_create()
+	drawError = RenderingServer.canvas_item_create()
 	drawCrumbled = RenderingServer.canvas_item_create()
 	drawPainted = RenderingServer.canvas_item_create()
 	drawFrozen = RenderingServer.canvas_item_create()
@@ -106,11 +110,14 @@ func _ready() -> void:
 	RenderingServer.canvas_item_set_parent(drawAuraBreaker,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawGlitch,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawMain,get_canvas_item())
+	RenderingServer.canvas_item_set_parent(drawError,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawCrumbled, %auraParent.get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawPainted, %auraParent.get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawFrozen, %auraParent.get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawCopies,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawNegative,get_canvas_item())
+	RenderingServer.canvas_item_set_self_modulate(drawError, "#ffffffaa")
+	RenderingServer.canvas_item_set_material(drawError,Game.ADDITIVE_MATERIAL)
 	Game.connect(&"goldIndexChanged",queue_redraw)
 
 func _freed() -> void:
@@ -119,6 +126,7 @@ func _freed() -> void:
 	RenderingServer.free_rid(drawAuraBreaker)
 	RenderingServer.free_rid(drawGlitch)
 	RenderingServer.free_rid(drawMain)
+	RenderingServer.free_rid(drawError)
 	RenderingServer.free_rid(drawCrumbled)
 	RenderingServer.free_rid(drawPainted)
 	RenderingServer.free_rid(drawFrozen)
@@ -136,6 +144,7 @@ func _draw() -> void:
 	RenderingServer.canvas_item_clear(drawAuraBreaker)
 	RenderingServer.canvas_item_clear(drawGlitch)
 	RenderingServer.canvas_item_clear(drawMain)
+	RenderingServer.canvas_item_clear(drawError)
 	RenderingServer.canvas_item_clear(drawCrumbled)
 	RenderingServer.canvas_item_clear(drawPainted)
 	RenderingServer.canvas_item_clear(drawFrozen)
@@ -151,6 +160,12 @@ func _draw() -> void:
 		animState != ANIM_STATE.RELOCK or animPart > 2
 	)
 	var rect:Rect2 = Rect2(Vector2.ZERO, size)
+	# error effect
+	if colorSpend == Game.COLOR.ERROR:
+		for i in range(size.x / 32):
+			for j in range(size.y / 32):
+				var errorrect:Rect2 = Rect2(i*32+randi_range(-5,5),j*32+randi_range(-5,5),32.0,32.0)
+				RenderingServer.canvas_item_add_texture_rect(drawError,errorrect,ERROR_FX.current([randi_range(0,2)]))
 	# auras
 	drawAuras(drawCrumbled,drawPainted,drawFrozen,
 		frozen if Game.playState == Game.PLAY_STATE.EDIT else gameFrozen,
@@ -184,10 +199,13 @@ static func drawDoor(doorDrawScaled:RID,doorDrawAuraBreaker:RID,doorDrawGlitch:R
 		RenderingServer.canvas_item_add_rect(doorDrawMain,Rect2(Vector2(doorSize.x,0),Vector2(1,doorSize.y)),Color.BLACK.blend(Color(Color.WHITE,doorGateAlpha)))
 	else:
 		if drawFill:
-			if doorBaseColor in Game.TEXTURED_COLORS:
-				var tileTexture:bool = doorBaseColor in Game.TILED_TEXTURED_COLORS
-				RenderingServer.canvas_item_add_texture_rect(doorDrawScaled,rect,Game.COLOR_TEXTURES.current([doorBaseColor]),tileTexture)
-			elif doorBaseColor == Game.COLOR.GLITCH:
+			var tempColor = doorBaseColor
+			if doorBaseColor == Game.COLOR.ERROR:
+				tempColor = doorGlitchColor
+			if tempColor in Game.TEXTURED_COLORS:
+				var tileTexture:bool = tempColor in Game.TILED_TEXTURED_COLORS
+				RenderingServer.canvas_item_add_texture_rect(doorDrawScaled,rect,Game.COLOR_TEXTURES.current([tempColor]),tileTexture)
+			elif tempColor == Game.COLOR.GLITCH:
 				RenderingServer.canvas_item_add_nine_patch(doorDrawGlitch,rect,TEXTURE_RECT,SPEND_HIGH,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.highTone[Game.COLOR.GLITCH])
 				RenderingServer.canvas_item_add_nine_patch(doorDrawGlitch,rect,TEXTURE_RECT,SPEND_MAIN,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.mainTone[Game.COLOR.GLITCH])
 				RenderingServer.canvas_item_add_nine_patch(doorDrawGlitch,rect,TEXTURE_RECT,SPEND_DARK,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.darkTone[Game.COLOR.GLITCH])
@@ -198,16 +216,16 @@ static func drawDoor(doorDrawScaled:RID,doorDrawAuraBreaker:RID,doorDrawGlitch:R
 						RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,GLITCH_HIGH,GLITCH_CORNER_SIZE,GLITCH_CORNER_SIZE,TILE,TILE,true,Game.highTone[doorGlitchColor])
 						RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,GLITCH_MAIN,GLITCH_CORNER_SIZE,GLITCH_CORNER_SIZE,TILE,TILE,true,Game.mainTone[doorGlitchColor])
 						RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,GLITCH_DARK,GLITCH_CORNER_SIZE,GLITCH_CORNER_SIZE,TILE,TILE,true,Game.darkTone[doorGlitchColor])
-			elif doorBaseColor in [Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI]:
+			elif tempColor in [Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI]:
 				RenderingServer.canvas_item_set_material(doorDrawScaled,Game.NO_MATERIAL.get_rid())
-				RenderingServer.canvas_item_add_nine_patch(doorDrawScaled,rect,TEXTURE_RECT,SPEND_HIGH,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.highTone[doorBaseColor])
-				RenderingServer.canvas_item_add_nine_patch(doorDrawScaled,rect,TEXTURE_RECT,SPEND_MAIN,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.mainTone[doorBaseColor])
-				RenderingServer.canvas_item_add_nine_patch(doorDrawScaled,rect,TEXTURE_RECT,SPEND_DARK,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.darkTone[doorBaseColor])
-				drawAuras(doorDrawAuraBreaker,doorDrawAuraBreaker,doorDrawAuraBreaker,doorBaseColor==Game.COLOR.ICE,doorBaseColor==Game.COLOR.MUD,doorBaseColor==Game.COLOR.GRAFFITI,rect)
+				RenderingServer.canvas_item_add_nine_patch(doorDrawScaled,rect,TEXTURE_RECT,SPEND_HIGH,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.highTone[tempColor])
+				RenderingServer.canvas_item_add_nine_patch(doorDrawScaled,rect,TEXTURE_RECT,SPEND_MAIN,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.mainTone[tempColor])
+				RenderingServer.canvas_item_add_nine_patch(doorDrawScaled,rect,TEXTURE_RECT,SPEND_DARK,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.darkTone[tempColor])
+				drawAuras(doorDrawAuraBreaker,doorDrawAuraBreaker,doorDrawAuraBreaker,tempColor==Game.COLOR.ICE,tempColor==Game.COLOR.MUD,tempColor==Game.COLOR.GRAFFITI,rect)
 			else:
-				RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,SPEND_HIGH,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.highTone[doorBaseColor])
-				RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,SPEND_MAIN,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.mainTone[doorBaseColor])
-				RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,SPEND_DARK,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.darkTone[doorBaseColor])
+				RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,SPEND_HIGH,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.highTone[tempColor])
+				RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,SPEND_MAIN,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.mainTone[tempColor])
+				RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,SPEND_DARK,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Game.darkTone[tempColor])
 		# frame
 		if doorDrawComplex:
 			RenderingServer.canvas_item_add_nine_patch(doorDrawMain,rect,TEXTURE_RECT,FRAME_HIGH,CORNER_SIZE,CORNER_SIZE,TILE,TILE,true,Color.from_hsv(Game.complexViewHue,0.4901960784,1))
@@ -373,6 +391,8 @@ var cursed:bool = false
 var curseColor:Game.COLOR
 var glitchMimic:Game.COLOR = Game.COLOR.GLITCH
 var curseGlitchMimic:Game.COLOR = Game.COLOR.GLITCH
+var errorMimic:Game.COLOR = Game.COLOR.ERROR
+var curseErrorMimic:Game.COLOR = Game.COLOR.ERROR
 
 enum ANIM_STATE {IDLE, ADD_COPY, RELOCK}
 var animState:ANIM_STATE = ANIM_STATE.IDLE
@@ -465,6 +485,8 @@ func stop() -> void:
 	drawComplex = false
 	glitchMimic = Game.COLOR.GLITCH
 	curseGlitchMimic = Game.COLOR.GLITCH
+	errorMimic = Game.COLOR.ERROR
+	curseErrorMimic = Game.COLOR.ERROR
 	justOpened = false
 	super()
 
@@ -764,6 +786,7 @@ func colorAfterCurse() -> Game.COLOR:
 func colorAfterGlitch() -> Game.COLOR:
 	var base:Game.COLOR = colorAfterCurse()
 	if base == Game.COLOR.GLITCH: return curseGlitchMimic if cursed and curseColor != Game.COLOR.PURE else glitchMimic
+	if base == Game.COLOR.ERROR: return curseErrorMimic if cursed and curseColor != Game.COLOR.PURE else errorMimic
 	return base
 
 func colorAfterAurabreaker() -> Game.COLOR:
@@ -788,6 +811,16 @@ func setGlitch(setColor:Game.COLOR) -> void:
 	elif curseColor == Game.COLOR.GLITCH: GameChanges.addChange(GameChanges.PropertyChange.new(self, &"curseGlitchMimic", setColor))
 	for lock in locks:
 		if !cursed or curseColor == Game.COLOR.PURE or lock.armament: GameChanges.addChange(GameChanges.PropertyChange.new(lock, &"glitchMimic", setColor))
+		lock.queue_redraw()
+	queue_redraw()
+	if type == TYPE.GATE:
+		gateCheck(Game.player)
+		Game.player.bufferCheckKeys() # if armaments
+func setError(setColor:Game.COLOR) -> void:
+	if !cursed or curseColor == Game.COLOR.PURE: GameChanges.addChange(GameChanges.PropertyChange.new(self, &"errorMimic", setColor))
+	elif curseColor == Game.COLOR.ERROR: GameChanges.addChange(GameChanges.PropertyChange.new(self, &"curseErrorMimic", setColor))
+	for lock in locks:
+		if !cursed or curseColor == Game.COLOR.PURE or lock.armament: GameChanges.addChange(GameChanges.PropertyChange.new(lock, &"errorMimic", setColor))
 		lock.queue_redraw()
 	queue_redraw()
 	if type == TYPE.GATE:

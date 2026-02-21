@@ -7,6 +7,11 @@ static var mods:Dictionary[StringName, Mod] = {
 		"Adds the option for locks on combo doors to be of arbitrary sizes",
 		[&"NstdLockSize"]
 	),
+	&"ErrorColor": Mod.new(
+		"Error Color",
+		"Adds the Error Color from the Negative Worlds",
+		[&"ErrorColor"],
+	),
 	&"MoreLockConfigs": Mod.new(
 		"More Lock Configurations",
 		"Adds predefined lock configurations for 7, 9, 10, 11, and 13 locks, as well as an alternative configuration for 24 locks.\nDesigns by JustImagineIt and themetah",
@@ -228,6 +233,7 @@ func colors() -> Array[Game.COLOR]:
 	if active(&"DarkAuraColors"): array.append_array([Game.COLOR.MAROON, Game.COLOR.FOREST, Game.COLOR.NAVY])
 	if active( &"AuraBreakerColors"): array.append_array([Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI])
 	if active(&"NoneColor"): array.append(Game.COLOR.NONE)
+	if active(&"ErrorColor"): array.append(Game.COLOR.ERROR)
 	return array
 
 ## wraps

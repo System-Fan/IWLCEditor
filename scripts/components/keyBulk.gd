@@ -12,7 +12,7 @@ enum OPERATION {SET, ADD, SUBTRACT, MULTIPLY, DIVIDE, MODULO}
 const OPERATION_NAMES:Array[String] = ["Set", "Add", "Subtract", "Multiply", "Divide", "Modulo"]
 
 # colors that use textures
-const TEXTURE_COLORS:Array[Game.COLOR] = [Game.COLOR.MASTER, Game.COLOR.PURE, Game.COLOR.STONE, Game.COLOR.DYNAMITE, Game.COLOR.QUICKSILVER, Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI]
+const TEXTURE_COLORS:Array[Game.COLOR] = [Game.COLOR.MASTER, Game.COLOR.PURE, Game.COLOR.STONE, Game.COLOR.DYNAMITE, Game.COLOR.QUICKSILVER, Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI, Game.COLOR.ERROR]
 
 static var FILL:KeyTextureLoader = KeyTextureLoader.new("res://assets/game/key/$t/fill.png")
 static var FRAME:KeyTextureLoader = KeyTextureLoader.new("res://assets/game/key/$t/frame.png")
@@ -20,6 +20,7 @@ static var FILL_GLITCH:KeyTextureLoader = KeyTextureLoader.new("res://assets/gam
 static var FRAME_GLITCH:KeyTextureLoader = KeyTextureLoader.new("res://assets/game/key/$t/frameGlitch.png")
 static var OUTLINE_MASK:KeyTextureLoader = KeyTextureLoader.new("res://assets/game/key/$t/outlineMask.png")
 static var QUICKSILVER_OUTLINE_MASK:KeyTextureLoader = KeyTextureLoader.new("res://assets/game/key/quicksilver/outlineMask$t.png", true)
+static var ERROR_FX:IndexTextureLoader = IndexTextureLoader.new("res://assets/game/key/error/fx.png", 3)
 
 # for the additional little thing in the operator key
 static var OPERATOR_FRAME:OperatorTextureLoader = OperatorTextureLoader.new("res://assets/game/key/operator/frame/$t.png")
@@ -72,6 +73,7 @@ var drawDropShadow:RID
 var drawGlitch:RID
 var drawMain:RID
 var drawSymbol:RID
+var drawError:RID
 var drawAdditionalGlitch:RID
 var drawAdditional:RID
 func _init() -> void: size = Vector2(32,32)
@@ -81,6 +83,7 @@ func _ready() -> void:
 	drawGlitch = RenderingServer.canvas_item_create()
 	drawMain = RenderingServer.canvas_item_create()
 	drawSymbol = RenderingServer.canvas_item_create()
+	drawError = RenderingServer.canvas_item_create()
 	drawAdditionalGlitch = RenderingServer.canvas_item_create()
 	drawAdditional = RenderingServer.canvas_item_create()
 	RenderingServer.canvas_item_set_material(drawGlitch,Game.GLITCH_MATERIAL.get_rid())
@@ -90,6 +93,9 @@ func _ready() -> void:
 	RenderingServer.canvas_item_set_parent(drawGlitch,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawMain,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawSymbol,get_canvas_item())
+	RenderingServer.canvas_item_set_parent(drawError,get_canvas_item())
+	RenderingServer.canvas_item_set_self_modulate(drawError, "#ffffffaa")
+	RenderingServer.canvas_item_set_material(drawError,Game.ADDITIVE_MATERIAL)
 	RenderingServer.canvas_item_set_parent(drawAdditionalGlitch,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawAdditional,get_canvas_item())
 	Game.connect(&"goldIndexChanged",func():if hasAnimatedColor(): queue_redraw())
@@ -104,6 +110,7 @@ func _freed() -> void:
 	RenderingServer.free_rid(drawGlitch)
 	RenderingServer.free_rid(drawMain)
 	RenderingServer.free_rid(drawSymbol)
+	RenderingServer.free_rid(drawError)
 	RenderingServer.free_rid(drawAdditionalGlitch)
 	RenderingServer.free_rid(drawAdditional)
 
@@ -131,12 +138,16 @@ func _draw() -> void:
 	RenderingServer.canvas_item_clear(drawGlitch)
 	RenderingServer.canvas_item_clear(drawMain)
 	RenderingServer.canvas_item_clear(drawSymbol)
+	RenderingServer.canvas_item_clear(drawError)
 	RenderingServer.canvas_item_clear(drawAdditionalGlitch)
 	RenderingServer.canvas_item_clear(drawAdditional)
 	if !active and Game.playState == Game.PLAY_STATE.PLAY: return
 	var rect:Rect2 = Rect2(Vector2.ZERO, size)
 	RenderingServer.canvas_item_add_texture_rect(drawDropShadow,Rect2(Vector2(3,3),size),getOutlineTexture(color,type,un,operation),false,Game.DROP_SHADOW_COLOR)
-	drawKey(drawGlitch,drawMain,Vector2.ZERO,color,type,un,glitchMimic,partialInfiniteAlpha)
+	drawKey(drawGlitch,drawMain,Vector2.ZERO,baseColor(),type,un,glitchMimic,partialInfiniteAlpha)
+	if color == Game.COLOR.ERROR:
+		var errorrect:Rect2 = Rect2(Vector2(randi_range(-5,5),randi_range(-5,5)),size)
+		RenderingServer.canvas_item_add_texture_rect(drawError,errorrect,ERROR_FX.current([randi_range(0,2)]))
 	if animState == ANIM_STATE.FLASH: RenderingServer.canvas_item_add_texture_rect(drawSymbol,rect,outlineTex(),false,Color(Color.WHITE,animAlpha))
 	match type:
 		KeyBulk.TYPE.NORMAL, KeyBulk.TYPE.EXACT:
@@ -226,6 +237,7 @@ func propertyChangedInit(property:StringName) -> void:
 
 # ==== PLAY ==== #
 var glitchMimic:Game.COLOR = Game.COLOR.GLITCH
+var errorMimic:Game.COLOR = Game.COLOR.ERROR
 var partialInfiniteCount:int = 0
 
 enum ANIM_STATE {IDLE, FLASH}
@@ -250,6 +262,7 @@ func _process(delta:float) -> void:
 
 func stop() -> void:
 	glitchMimic = Game.COLOR.GLITCH
+	errorMimic = Game.COLOR.ERROR
 	partialInfiniteCount = 0
 	partialInfiniteAlpha = 1
 	super()
@@ -312,9 +325,14 @@ func collect(player:Player) -> void:
 			_:
 				if M.negative(M.sign(count)): AudioManager.play(preload("res://resources/sounds/key/negative.wav"))
 				else: AudioManager.play(preload("res://resources/sounds/key/normal.wav"))
+	
+	Game.setError(collectColor)
 
 func setGlitch(setColor:Game.COLOR) -> void:
 	GameChanges.addChange(GameChanges.PropertyChange.new(self, &"glitchMimic", setColor))
+	queue_redraw()
+func setError(setColor:Game.COLOR) -> void:
+	GameChanges.addChange(GameChanges.PropertyChange.new(self, &"errorMimic", setColor))
 	queue_redraw()
 
 func flashAnimation() -> void:
@@ -325,6 +343,10 @@ func propertyGameChangedDo(property:StringName) -> void:
 	if property == &"active":
 		%interact.process_mode = PROCESS_MODE_INHERIT if active else PROCESS_MODE_DISABLED
 
-func effectiveColor(part:Game.COLOR) -> Game.COLOR:
-	if part == Game.COLOR.GLITCH: return glitchMimic
-	return part
+func baseColor() -> Game.COLOR:
+	if color == Game.COLOR.ERROR: return errorMimic
+	return color
+
+func effectiveColor() -> Game.COLOR:
+	if color == Game.COLOR.GLITCH: return glitchMimic
+	return baseColor()

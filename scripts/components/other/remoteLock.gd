@@ -44,6 +44,7 @@ var drawGlitch:RID
 var drawScaled:RID
 var drawAuraBreaker:RID
 var drawMain:RID
+var drawError:RID
 var drawConfiguration:RID
 var drawCrumbled:RID
 var drawPainted:RID
@@ -58,6 +59,7 @@ func _ready() -> void:
 	drawAuraBreaker = RenderingServer.canvas_item_create()
 	drawGlitch = RenderingServer.canvas_item_create()
 	drawMain = RenderingServer.canvas_item_create()
+	drawError = RenderingServer.canvas_item_create()
 	drawConfiguration = RenderingServer.canvas_item_create()
 	drawCrumbled = RenderingServer.canvas_item_create()
 	drawPainted = RenderingServer.canvas_item_create()
@@ -74,6 +76,8 @@ func _ready() -> void:
 	RenderingServer.canvas_item_set_parent(drawCrumbled,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawPainted,get_canvas_item())
 	RenderingServer.canvas_item_set_parent(drawFrozen,get_canvas_item())
+	RenderingServer.canvas_item_set_self_modulate(drawError, "#ffffffaa")
+	RenderingServer.canvas_item_set_material(drawError,Game.ADDITIVE_MATERIAL)
 	Game.connect(&"goldIndexChanged",queue_redraw)
 
 func _freed() -> void:
@@ -83,6 +87,7 @@ func _freed() -> void:
 	RenderingServer.free_rid(drawScaled)
 	RenderingServer.free_rid(drawAuraBreaker)
 	RenderingServer.free_rid(drawMain)
+	RenderingServer.free_rid(drawError)
 	RenderingServer.free_rid(drawConfiguration)
 	RenderingServer.free_rid(drawCrumbled)
 	RenderingServer.free_rid(drawPainted)
@@ -100,6 +105,7 @@ func _draw() -> void:
 	RenderingServer.canvas_item_clear(drawAuraBreaker)
 	RenderingServer.canvas_item_clear(drawGlitch)
 	RenderingServer.canvas_item_clear(drawMain)
+	RenderingServer.canvas_item_clear(drawError)
 	RenderingServer.canvas_item_clear(drawConfiguration)
 	RenderingServer.canvas_item_clear(drawCrumbled)
 	RenderingServer.canvas_item_clear(drawPainted)
@@ -133,6 +139,8 @@ func _draw() -> void:
 		crumbled if Game.playState == Game.PLAY_STATE.EDIT else gameCrumbled,
 		painted if Game.playState == Game.PLAY_STATE.EDIT else gamePainted,
 		Rect2(-getOffset(),size))
+	if colorAfterCurse() == Game.COLOR.ERROR:
+		RenderingServer.canvas_item_add_texture_rect(drawError,Rect2(-Lock.offsetFromType(sizeType), size),Lock.ERROR_FX.current([randi_range(0,2)]))
 
 func getDrawPosition() -> Vector2: return position - getOffset()
 
@@ -192,6 +200,8 @@ var cursed:bool = false
 var curseColor:Game.COLOR
 var glitchMimic:Game.COLOR = Game.COLOR.GLITCH
 var curseGlitchMimic:Game.COLOR = Game.COLOR.GLITCH
+var errorMimic:Game.COLOR = Game.COLOR.ERROR
+var curseErrorMimic:Game.COLOR = Game.COLOR.ERROR
 var satisfied:bool = false
 var cost:PackedInt64Array = M.ZERO
 var gameFrozen:bool = false
@@ -225,6 +235,8 @@ func stop() -> void:
 	cursed = false
 	glitchMimic = Game.COLOR.GLITCH
 	curseGlitchMimic = Game.COLOR.GLITCH
+	errorMimic = Game.COLOR.ERROR
+	curseErrorMimic = Game.COLOR.ERROR
 	satisfied = false
 	cost = M.ZERO
 	curseTimer = 0
@@ -264,6 +276,7 @@ func colorAfterCurse() -> Game.COLOR:
 func colorAfterGlitch() -> Game.COLOR:
 	var base:Game.COLOR = colorAfterCurse()
 	if base == Game.COLOR.GLITCH: return curseGlitchMimic if cursed and curseColor != Game.COLOR.PURE else glitchMimic
+	if base == Game.COLOR.ERROR: return curseErrorMimic if cursed and curseColor != Game.COLOR.PURE else errorMimic
 	return base
 
 func colorAfterAurabreaker() -> Game.COLOR:
@@ -295,6 +308,10 @@ func setGlitch(setColor:Game.COLOR) -> void:
 	if !cursed or curseColor == Game.COLOR.PURE: GameChanges.addChange(GameChanges.PropertyChange.new(self, &"glitchMimic", setColor))
 	else: GameChanges.addChange(GameChanges.PropertyChange.new(self, &"curseGlitchMimic", setColor))
 	queue_redraw()
+func setError(setColor:Game.COLOR) -> void:
+	if !cursed or curseColor == Game.COLOR.PURE: GameChanges.addChange(GameChanges.PropertyChange.new(self, &"errorMimic", setColor))
+	else: GameChanges.addChange(GameChanges.PropertyChange.new(self, &"curseErrorMimic", setColor))
+	queue_redraw()
 
 func curseCheck(player:Player) -> void:
 	if colorAfterGlitch() == Game.COLOR.PURE or armament: return
@@ -308,6 +325,8 @@ func curseCheck(player:Player) -> void:
 		GameChanges.addChange(GameChanges.PropertyChange.new(self,&"cursed",false))
 		if curseColor == Game.COLOR.GLITCH:
 			GameChanges.addChange(GameChanges.PropertyChange.new(self,&"curseGlitchMimic",Game.COLOR.GLITCH))
+		if curseColor == Game.COLOR.ERROR:
+			GameChanges.addChange(GameChanges.PropertyChange.new(self,&"curseErrorMimic",Game.COLOR.ERROR))
 		makeCurseParticles(Game.COLOR.BROWN, -1, 0.2, 0.5)
 		AudioManager.play(preload("res://resources/sounds/door/decurse.wav"))
 		GameChanges.bufferSave()

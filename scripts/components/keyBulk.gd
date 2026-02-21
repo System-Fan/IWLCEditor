@@ -273,7 +273,7 @@ func collect(player:Player) -> void:
 					OPERATION.SUBTRACT: player.changeGlisten(collectColor, M.sub(player.glisten[collectColor], player.glisten[collectAltColor]))
 					OPERATION.MULTIPLY: player.changeGlisten(collectColor, M.times(player.glisten[collectColor], player.glisten[collectAltColor]))
 					OPERATION.DIVIDE: player.changeGlisten(collectColor, M.divide(player.glisten[collectColor], player.glisten[collectAltColor]))
-					OPERATION.MODULO: player.changeGlisten(collectColor, M.remainder(player.glisten[collectColor], player.glisten[collectAltColor]))
+					OPERATION.MODULO: player.changeGlisten(collectColor, M.modulo(player.glisten[collectColor], player.glisten[collectAltColor]))
 
 	match type:
 		TYPE.NORMAL: player.changeKeys(collectColor, M.add(player.key[collectColor], count))
@@ -290,7 +290,7 @@ func collect(player:Player) -> void:
 				OPERATION.SUBTRACT: player.changeKeys(collectColor, M.sub(player.key[collectColor], player.key[collectAltColor]))
 				OPERATION.MULTIPLY: player.changeKeys(collectColor, M.times(player.key[collectColor], player.key[collectAltColor]))
 				OPERATION.DIVIDE: player.changeKeys(collectColor, M.divide(player.key[collectColor], player.key[collectAltColor]))
-				OPERATION.MODULO: player.changeKeys(collectColor, M.remainder(player.key[collectColor], player.key[collectAltColor]))
+				OPERATION.MODULO: player.changeKeys(collectColor, M.modulo(player.key[collectColor], player.key[collectAltColor]))
 	
 	if infinite:
 		flashAnimation()

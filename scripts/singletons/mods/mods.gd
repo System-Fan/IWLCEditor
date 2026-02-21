@@ -116,6 +116,11 @@ static var mods:Dictionary[StringName, Mod] = {
 		"Operator Keys",
 		"Adds Operator keys and Reciprocal keys. Added by Bored",
 		[&"OperatorKey", &"ReciprocalKey"]
+	),
+	&"RemainderLocks": Mod.new(
+		"Remainder Locks",
+		"Adds Remainder Locks. Added by Bored",
+		[&"RemainderLock"]
 	)
 }
 
@@ -254,6 +259,7 @@ func lockTypes() -> Array[Lock.TYPE]:
 	]
 	if active(&"ExactLocks"): array.append(Lock.TYPE.EXACT)
 	if active(&"Glistening"): array.append(Lock.TYPE.GLISTENING)
+	if active(&"RemainderLocks"): array.append(Lock.TYPE.REMAINDER)
 	return array
 
 func keyCounterWidths() -> Array[KeyCounter.WIDTH]:

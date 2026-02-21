@@ -874,6 +874,12 @@ label = "Set Glistening Type"
 action = &"focusLockGlistening"
 prerequisite = &"Glistening"
 
+[node name="focusLockRemainder" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/doorFocused/c/editingLockProperties/c" unique_id=917036894 instance=ExtResource("6_dkncv")]
+layout_mode = 2
+label = "Set Remainder Type"
+action = &"focusLockRemainder"
+prerequisite = &"RemainderLocks"
+
 [node name="focusLockNegated" parent="c/editorSettings/c2/c/hotkeys/componentFocused/c/doorFocused/c/editingLockProperties/c" unique_id=1810499545 instance=ExtResource("6_dkncv")]
 layout_mode = 2
 label = "Toggle Negated"

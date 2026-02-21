@@ -8,6 +8,7 @@ const ICONS:Array[Texture2D] = [
 	preload("res://assets/ui/focusDialog/lockType/all.png"),
 	preload("res://assets/ui/focusDialog/lockType/exact.png"),
 	preload("res://assets/ui/focusDialog/lockType/glistening.png"),
+	preload("res://assets/ui/focusDialog/lockType/remainder.png"),
 ]
 
 func _ready() -> void:
@@ -25,6 +26,7 @@ func _ready() -> void:
 			Lock.TYPE.ALL: explanation = ControlExplanation.new("[%s]Set all lock type", [&"focusLockAll"])
 			Lock.TYPE.EXACT: explanation = ControlExplanation.new("[%s]Set exact lock type", [&"focusLockExact"])
 			Lock.TYPE.GLISTENING: explanation = ControlExplanation.new("[%s]Set glistening lock type", [&"focusLockGlistening"])
+			Lock.TYPE.REMAINDER: explanation = ControlExplanation.new("[%s]Set remainder lock type", [&"focusLockRemainder"])
 		Explainer.addControl(button,explanation)
 
 func changedMods() -> void:

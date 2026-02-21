@@ -1,9 +1,9 @@
 extends GameComponent
 class_name Lock
 
-const TYPES:int = 6
-enum TYPE {NORMAL, BLANK, BLAST, ALL, EXACT, GLISTENING}
-const TYPE_NAMES:Array[String] = ["Normal", "Blank", "Blast", "All", "Exact", "Glistening"]
+const TYPES:int = 7
+enum TYPE {NORMAL, BLANK, BLAST, ALL, EXACT, GLISTENING, REMAINDER}
+const TYPE_NAMES:Array[String] = ["Normal", "Blank", "Blast", "All", "Exact", "Glistening", "Remainder"]
 const SIZE_TYPES:int = 7
 enum SIZE_TYPE {AnyS, AnyH, AnyV, AnyM, AnyL, AnyXL, ANY}
 const SIZE_TYPE_NAMES:Array[String] = ["AnyS", "AnyH", "AnyV", "AnyM", "AnyL", "AnyXL", "Any"]
@@ -83,6 +83,7 @@ const SYMBOL_EXACTI = preload("res://assets/game/lock/symbols/exacti.png")
 const SYMBOL_ALL = preload("res://assets/game/lock/symbols/all.png")
 const SYMBOL_GLISTENING = preload("res://assets/game/lock/symbols/glistening.png")
 const SYMBOL_GLISTENINGI = preload("res://assets/game/lock/symbols/glisteningi.png")
+const SYMBOL_REMAINDER = preload("res://assets/game/lock/symbols/remainder.png")
 const SYMBOL_SIZE:Vector2 = Vector2(32,32)
 
 static var GLITCH_FILL:LockTextureLoader = LockTextureLoader.new("res://assets/game/lock/fill/$tglitch.png")
@@ -234,12 +235,12 @@ static func drawLock(lockDrawScaled:RID, lockDrawAuraBreaker:RID, lockDrawGlitch
 	# configuration
 	if lockConfiguration == CONFIGURATION.NONE:
 		match lockType:
-			TYPE.NORMAL,TYPE.EXACT,TYPE.GLISTENING:
+			TYPE.NORMAL,TYPE.EXACT,TYPE.GLISTENING,TYPE.REMAINDER:
 				var string:String = M.str(M.abs(lockCount))
 				if string == "1": string = ""
 				if M.isNonzeroImag(lockCount) and lockType == TYPE.NORMAL: string += "i"
 				var lockOffsetX:float = 0
-				var showLock:bool = (lockType == TYPE.EXACT or lockType == TYPE.GLISTENING) || (!M.isNonzeroImag(lockCount) && (lockSize != Vector2(18,18) || string == ""))
+				var showLock:bool = (lockType in [TYPE.EXACT, TYPE.GLISTENING, TYPE.REMAINDER]) || (!M.isNonzeroImag(lockCount) && (lockSize != Vector2(18,18) || string == ""))
 				if lockType == TYPE.EXACT and !showLock: string = "=" + string
 				var vertical:bool = lockSize.x == 18 && lockSize.y != 18 && string != ""
 
@@ -271,6 +272,7 @@ static func drawLock(lockDrawScaled:RID, lockDrawAuraBreaker:RID, lockDrawGlitch
 						TYPE.NORMAL: lockSymbol = SYMBOL_NORMAL
 						TYPE.GLISTENING: lockSymbol = SYMBOL_GLISTENINGI if M.isNonzeroImag(lockCount) else SYMBOL_GLISTENING
 						TYPE.EXACT: lockSymbol = SYMBOL_EXACTI if M.isNonzeroImag(lockCount) or lockZeroI else SYMBOL_EXACT
+						TYPE.REMAINDER: lockSymbol = SYMBOL_REMAINDER
 					if lockNegated: lockRect = Rect2(lockSize-lockRect.position-lockRect.size-offsetFromType(lockSizeType)*2,lockRect.size)
 					RenderingServer.canvas_item_add_texture_rect(lockDrawConfiguration,lockRect,lockSymbol,false,getConfigurationColor(negative))
 				if symbolLast: Game.FTALK.draw_string(lockDrawMain,Vector2(startX,startY)-offsetFromType(lockSizeType),string,HORIZONTAL_ALIGNMENT_LEFT,-1,12,getConfigurationColor(negative))
@@ -487,6 +489,8 @@ static func getLockCanOpen(lock:GameComponent,player:Player) -> bool:
 				else: can = M.nex(M.r(keyCount))
 			else: can = M.eq(M.along(keyCount, lockCount), M.cabs(lockCount))
 		TYPE.GLISTENING: can = M.cgte(M.along(glistCount, lockCount), M.cabs(lockCount))
+		TYPE.REMAINDER:
+			can = M.neq(M.partialremainder(keyCount, lockCount),M.ZERO)
 	return can != lock.negated
 
 func getCost(player:Player, ipow:PackedInt64Array=parent.ipow()) -> PackedInt64Array: return getLockCost(self, player, ipow)
@@ -499,6 +503,7 @@ static func getLockCost(lock:GameComponent, player:Player, ipow:PackedInt64Array
 	match lock.type:
 		TYPE.NORMAL, TYPE.EXACT, TYPE.GLISTENING: cost = lockCount
 		TYPE.BLAST: if M.ex(lockDenominator): cost = M.divide(M.times(M.alongbs(keyCount, lockDenominator), lockCount), lockDenominator)
+		TYPE.REMAINDER: cost = M.partialremainder(keyCount, lockCount)
 		TYPE.ALL: if M.ex(lockDenominator): cost = M.divide(M.times(keyCount, lockCount), lockDenominator)
 	if lock.negated: return M.negate(cost)
 	return cost

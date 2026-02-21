@@ -1,7 +1,7 @@
 extends PanelContainer
 class_name Mouseover
 
-const LOCK_TYPES = ["", "Blank ", "Blast ", "All ", "Exact ", "Starry "]
+const LOCK_TYPES = ["", "Blank ", "Blast ", "All ", "Exact ", "Starry ", "Remainder "]
 
 func describe(object:GameObject, pos:Vector2, screenBottomRight:Vector2) -> void:
 	if !object:
@@ -26,7 +26,7 @@ func describe(object:GameObject, pos:Vector2, screenBottomRight:Vector2) -> void
 				string += "\nAmount: " + M.str(object.count)
 			if object.type == KeyBulk.TYPE.OPERATOR:
 				string += "\n"
-				match object.mode:
+				match object.operation:
 					KeyBulk.OPERATION.SET: string += "Action: Set to "
 					KeyBulk.OPERATION.ADD: string += "Action: Add "
 					KeyBulk.OPERATION.SUBTRACT: string += "Action: Subtract "
@@ -45,7 +45,9 @@ func describe(object:GameObject, pos:Vector2, screenBottomRight:Vector2) -> void
 					if object.locks[0].glitchMimic != object.glitchMimic: string += ", Mimic: " + Game.COLOR_NAMES[object.locks[0].glitchMimic]
 					string += ")"
 				string += "\nCost: " + lockCost(object.locks[0])
-				if object.locks[0].color != object.colorSpend: string += " " + Game.COLOR_NAMES[object.locks[0].color]
+				if object.locks[0].color != object.colorSpend: 
+					if object.locks[0] != Lock.TYPE.REMAINDER: # do NOT append the color to the end if its a remainder lock
+						string += " " + Game.COLOR_NAMES[object.locks[0].color]
 			else:
 				if object.type == Door.TYPE.COMBO:
 					string += Game.COLOR_NAMES[object.colorSpend]
@@ -100,6 +102,8 @@ func lockCost(lock:GameComponent) -> String:
 			if lock.zeroI: string += "i"
 		Lock.TYPE.GLISTENING:
 			string += M.str(lock.count) + " Glistening"
+		Lock.TYPE.REMAINDER:
+			string += Game.COLOR_NAMES[lock.color] + " % " + M.str(lock.count)
 	return string
 
 func effects(object:GameObject) -> String:

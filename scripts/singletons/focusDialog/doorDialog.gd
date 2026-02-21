@@ -59,7 +59,7 @@ func focusComponent(component:GameComponent, new:bool) -> void: # Lock or Remote
 	
 	%remoteLockConvert.visible = Mods.active(&"RemoteLocks") and component is not RemoteLock
 
-	%doorAxialNumberEdit.visible = component.type == Lock.TYPE.NORMAL or component.type == Lock.TYPE.EXACT or component.type == Lock.TYPE.GLISTENING
+	%doorAxialNumberEdit.visible = component.type in [Lock.TYPE.NORMAL, Lock.TYPE.EXACT, Lock.TYPE.GLISTENING, Lock.TYPE.REMAINDER]
 	%doorAxialNumberEdit.allowZero = Mods.active(&"ZeroCostLocks") \
 		or (Mods.active(&"PartialBlastLocks") and component.type in [Lock.TYPE.BLAST, Lock.TYPE.ALL]) \
 		or component.type == Lock.TYPE.EXACT
@@ -108,6 +108,7 @@ func receiveKey(event:InputEvent) -> bool:
 		elif Editor.eventIs(event, &"focusLockExact") and Mods.active(&"C3"): _lockTypeSelected(Lock.TYPE.EXACT if lock.type != Lock.TYPE.EXACT else Lock.TYPE.NORMAL)
 		elif Editor.eventIs(event, &"focusLockGlistening") and Mods.active(&"Glistening"): _lockTypeSelected(Lock.TYPE.GLISTENING if lock.type != Lock.TYPE.GLISTENING else Lock.TYPE.NORMAL)
 		elif Editor.eventIs(event, &"focusLockNegated") and Mods.active(&"NegatedLocks"): _lockNegatedSet(!%lockNegated.button_pressed)
+		elif Editor.eventIs(event, &"focusLockRemainder") and Mods.active(&"RemainderLocks"): _lockTypeSelected(Lock.TYPE.REMAINDER if lock.type != Lock.TYPE.REMAINDER else Lock.TYPE.NORMAL)
 		elif Editor.eventIs(event, &"focusLockArmament") and Mods.active(&"Armaments"): _lockArmamentSet(!%lockArmament.button_pressed)
 		elif main.focused is RemoteLock:
 			if Editor.eventIs(event, &"focusRemoteLockAddConnection"): %doorsHandler.addComponent()

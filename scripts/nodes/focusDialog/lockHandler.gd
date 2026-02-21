@@ -50,6 +50,7 @@ class LockHandlerButton extends HandlerButton:
 		preload("res://assets/ui/focusDialog/lockHandler/all.png"), preload("res://assets/ui/focusDialog/lockHandler/all.png"),
 		preload("res://assets/ui/focusDialog/lockHandler/exact.png"), preload("res://assets/ui/focusDialog/lockHandler/exacti.png"),
 		preload("res://assets/ui/focusDialog/lockHandler/glistening.png"), preload("res://assets/ui/focusDialog/lockHandler/glisteningi.png"),
+		preload("res://assets/ui/focusDialog/lockHandler/remainder.png"), preload("res://assets/ui/focusDialog/lockHandler/remainder.png"),
 	]
 
 	var lock:Lock

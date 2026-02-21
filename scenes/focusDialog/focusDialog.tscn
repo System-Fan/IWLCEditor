@@ -60,13 +60,11 @@ metadata/_custom_type_script = "uid://cgjhnhjwymb8g"
 script = ExtResource("22_s5h3h")
 explanation = "[%s]Toggle color link"
 hotkeys = Array[StringName]([&"focusDoorColorLink"])
-metadata/_custom_type_script = "uid://lwocqakgt4qr"
 
 [sub_resource type="Resource" id="Resource_q8u4b"]
 script = ExtResource("22_s5h3h")
 explanation = "[%s]Toggle negated"
 hotkeys = Array[StringName]([&"focusLockNegated"])
-metadata/_custom_type_script = "uid://lwocqakgt4qr"
 
 [sub_resource type="Resource" id="Resource_mscoq"]
 script = ExtResource("22_s5h3h")
@@ -822,6 +820,7 @@ default_color = Color(0.8352941, 0.8352941, 0.8352941, 1)
 [connection signal="select" from="keyDialog/c/c/c/keyColorSelector" to="keyDialog" method="_keyColorSelected"]
 [connection signal="select" from="keyDialog/c/c/c/c/keyTypeSelector" to="keyDialog" method="_keyTypeSelected"]
 [connection signal="toggled" from="keyDialog/c/c/c/c/keyInfiniteToggle" to="keyDialog" method="_keyInfiniteToggled"]
+[connection signal="valueSet" from="keyDialog/c/c/c/c/keyPartialInfinite/keyPartialInfiniteEdit" to="keyDialog" method="_keyPartialInfiniteSet"]
 [connection signal="toggled" from="keyDialog/c/c/c/c/keyGlisteningToggle" to="keyDialog" method="_keyGlisteningToggled"]
 [connection signal="valueSet" from="keyDialog/c/c/c/keyCountEdit" to="keyDialog" method="_keyCountSet"]
 [connection signal="select" from="keyDialog/c/c/c/keyOperationSelector" to="keyDialog" method="_keyOperationSelected"]

@@ -2,9 +2,9 @@ extends Node
 var editor:Editor
 
 static var mods:Dictionary[StringName, Mod] = {
-	&"NstdLockSize": Mod.new(
-		"Nonstandard Lock Sizes",
-		"Adds lock sizes on combo doors other than the ones supported by the basegame",
+	&"MoreLockSizes": Mod.new(
+		"More Lock Sizes",
+		"Adds the option for locks on combo doors to be of arbitrary sizes",
 		[&"NstdLockSize"]
 	),
 	&"MoreLockConfigs": Mod.new(
@@ -12,52 +12,77 @@ static var mods:Dictionary[StringName, Mod] = {
 		"Adds predefined lock configurations for 7, 9, 10, 11, and 13 locks, as well as an alternative configuration for 24 locks.\nDesigns by JustImagineIt and themetah",
 		[&"NstdLockConfig"]
 	),
-	&"ZeroCopies": Mod.new(
+	&"ZeroCopyDoors": Mod.new(
 		"Zero Copy Doors",
-		"Allows doors to have zero copies. Walking into zero-copy doors destroys them at no cost or check while updating glitch colors, and copies may be added to them in any direction with master keys",
-		[&"ZeroCopies"], true
+		"Allows doors to have zero copies",
+		[&"ZeroCopyDoor"], true
 	),
-	&"ZeroCostLock": Mod.new(
+	&"ZeroCostLocks": Mod.new(
 		"Zero Cost Locks",
-		"Allows locks to have a cost of 0",
+		"Allows locks to have a cost of zero",
 		[&"ZeroCostLock"], true
 	),
-	&"InfCopies": Mod.new(
+	&"InfCopyDoors": Mod.new(
 		"Infinite Copy Doors",
 		"Adds the option for doors to have infinite copies",
-		[&"InfCopies"]
+		[&"InfCopyDoor"]
 	),
 	&"NoneColor": Mod.new(
 		"None Color",
-		"Adds the None Color from L4vo5's Lockpick Editor",
-		[&"NoneColor"]
+		"Adds the None color from L4vo5's Lockpick Editor",
+		[&"NoneColorUsed"]
 	),
-	&"C1": Mod.new(
-		"IWL:C World 1",
-		"Adds Remote Locks and Negated Locks from world 1 of IWL:C",
-		[&"RemoteLock", &"LockNegated"]
+	&"RemoteLocks": Mod.new(
+		"Remote Locks",
+		"Adds Remote Locks from world 1 of IWL:C",
+		[&"RemoteLock"]
 	),
-	&"C2": Mod.new(
-		"IWL:C World 2",
-		"Adds Dynamite Keys and Quicksilver Keys from world 2 of IWL:C",
-		[&"DynamiteColor", &"QuicksilverColor"]
+	&"NegatedLocks": Mod.new(
+		"Negated Locks",
+		"Adds the Negated property for Locks from world 1 of IWL:C",
+		[&"NegatedLock"]
 	),
-	&"C3": Mod.new(
-		"IWL:C World 3",
-		"Adds Partial Blast Locks and Exact Locks from world 3 of IWL:C",
-		[&"PartialBlastLock", &"ExactLock"]
+	&"DynamiteColor": Mod.new(
+		"Dynamite Color",
+		"Adds the Dynamite color from world 2 of IWL:C",
+		[&"DynamiteColorUsed"]
 	),
-	&"C4": Mod.new(
-		"IWL:C World 4",
-		"Adds Dark Aura Keys and Aura Breaker Keys from world 4 of IWL:C", # maybe we should figure out some official name for these
-		[&"DarkAuraColor", &"AuraBreakerColor"]
+	&"QuicksilverColor": Mod.new(
+		"Quicksilver Color",
+		"Adds the Quicksilver color from world 2 of IWL:C",
+		[&"QuicksilverColorUsed"]
 	),
-	&"C5": Mod.new(
-		"IWL:C World 5",
-		"Adds Curse and Decurse Keys and Lock Armaments from world 5 of IWL:C",
-		[&"CurseKeyType", &"LockArmament"]
+	&"PartialBlastLocks": Mod.new(
+		"Partial Blast Locks",
+		"Adds the Partial Blast type for Locks from world 3 of IWL:C",
+		[&"PartialBlastLock"]
 	),
-	&"DisconnectedLock": Mod.new(
+	&"ExactLocks": Mod.new(
+		"Exact Locks",
+		"Adds the Exact type for Locks from world 3 of IWL:C",
+		[&"ExactLock"]
+	),
+	&"DarkAuraColors": Mod.new(
+		"Dark Aura Colors",
+		"Adds the Dark Aura colors from world 4 of IWL:C",
+		[&"DarkAuraColorUsed"]
+	),
+	&"AuraBreakerColors": Mod.new(
+		"Aura Breaker Colors",
+		"Adds the Aura Breaker colors from world 4 of IWL:C",
+		[&"AuraBreakerColorUsed"]
+	),
+	&"CurseKeys": Mod.new(
+		"Curse Keys",
+		"Adds Curse and Decurse Keys from world 5 of IWL:C",
+		[&"CurseKey"]
+	),
+	&"Armaments": Mod.new(
+		"Armaments",
+		"Adds Armaments from world 5 of IWL:C",
+		[&"LockArmament"]
+	),
+	&"DisconnectedLocks": Mod.new(
 		"Disconnected Locks",
 		"Allows locks of a door to be visually disconnected from it",
 		[&"DisconnectedLock"], true
@@ -67,7 +92,7 @@ static var mods:Dictionary[StringName, Mod] = {
 		"Allows objects to be placed out of level bounds",
 		[&"OutOfBounds"], true
 	),
-	&"PartialInfKey": Mod.new(
+	&"PartialInfKeys": Mod.new(
 		"Partial Infinite Keys",
 		"Adds the option for infinite keys to only become re-available every N key collects",
 		[&"PartialInfKey"]
@@ -87,10 +112,10 @@ static var mods:Dictionary[StringName, Mod] = {
 		"Adds larger sizes for key counters. Added by Bored",
 		[&"NstdKeyCounterWidth"]
 	),
-	&"OperatorKey": Mod.new(
+	&"OperatorKeys": Mod.new(
 		"Operator Keys",
-		"Adds Operator keys and reciprocal keys. Added by Bored",
-		[]
+		"Adds Operator keys and Reciprocal keys. Added by Bored",
+		[&"OperatorKey", &"ReciprocalKey"]
 	)
 }
 
@@ -119,14 +144,14 @@ static var modpacks:Dictionary[StringName, Modpack] = {
 				"2025-12-26",
 				"Includes mechanics from C1-C5. For backwards compatibility.",
 				"https://github.com/I-Wanna-Lockpick-Community/IWannaLockpick-Continued/releases/tag/demo1",
-				[&"C1", &"C2", &"C3", &"C4", &"C5"]
+				[&"RemoteLocks", &"NegatedLocks", &"DynamiteColor", &"QuicksilverColor", &"PartialBlastLocks", &"ExactLocks", &"DarkAuraColors", &"AuraBreakerColors", &"CurseKeys", &"Armaments"]
 			),
 			Version.new(
 				"C1-C6 Mechanics",
 				"202?-??-??",
 				"Includes mechanics from C1-C6. If you want to submit levels for IWL:C, you should use this.",
 				"https://github.com/I-Wanna-Lockpick-Community/IWannaLockpick-Continued",
-				[&"C1", &"C2", &"C3", &"C4", &"C5", &"Fractions", &"OperatorKey"]
+				[&"RemoteLocks", &"NegatedLocks", &"DynamiteColor", &"QuicksilverColor", &"PartialBlastLocks", &"ExactLocks", &"DarkAuraColors", &"AuraBreakerColors", &"CurseKeys", &"Armaments", &"Fractions", &"OperatorKeys"]
 			)
 		], 1
 	)
@@ -193,8 +218,10 @@ func colors() -> Array[Game.COLOR]:
 		Game.COLOR.GLITCH,
 		Game.COLOR.STONE,
 	]
-	if active(&"C2"): array.append_array([Game.COLOR.DYNAMITE, Game.COLOR.QUICKSILVER])
-	if active(&"C4"): array.append_array([Game.COLOR.MAROON, Game.COLOR.FOREST, Game.COLOR.NAVY, Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI])
+	if active(&"DynamiteColor"): array.append(Game.COLOR.DYNAMITE)
+	if active(&"QuicksilverColor"): array.append(Game.COLOR.QUICKSILVER)
+	if active(&"DarkAuraColors"): array.append_array([Game.COLOR.MAROON, Game.COLOR.FOREST, Game.COLOR.NAVY])
+	if active( &"AuraBreakerColors"): array.append_array([Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI])
 	if active(&"NoneColor"): array.append(Game.COLOR.NONE)
 	return array
 
@@ -215,8 +242,8 @@ func keyTypes() -> Array[KeyBulk.TYPE]:
 		KeyBulk.TYPE.STAR,
 		KeyBulk.TYPE.ROTOR
 	]
-	if active(&"C5"): array.append(KeyBulk.TYPE.CURSE)
-	if active(&"OperatorKey"): array.append(KeyBulk.TYPE.OPERATOR)
+	if active(&"CurseKeys"): array.append(KeyBulk.TYPE.CURSE)
+	if active(&"OperatorKeys"): array.append(KeyBulk.TYPE.OPERATOR)
 	return array
 
 func lockTypes() -> Array[Lock.TYPE]:
@@ -225,7 +252,7 @@ func lockTypes() -> Array[Lock.TYPE]:
 		Lock.TYPE.BLANK,
 		Lock.TYPE.BLAST, Lock.TYPE.ALL
 	]
-	if active(&"C3"): array.append(Lock.TYPE.EXACT)
+	if active(&"ExactLocks"): array.append(Lock.TYPE.EXACT)
 	if active(&"Glistening"): array.append(Lock.TYPE.GLISTENING)
 	return array
 
@@ -240,7 +267,7 @@ func keyCounterWidths() -> Array[KeyCounter.WIDTH]:
 
 func objectAvailable(object:GDScript) -> bool:
 	match object:
-		RemoteLock: return active(&"C1")
+		RemoteLock: return active(&"RemoteLocks")
 		_: return true
 
 class Mod extends RefCounted:

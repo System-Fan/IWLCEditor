@@ -22,7 +22,7 @@ func _ready() -> void:
 
 func _modsChanged() -> void:
 	%operatorKeyFocused.visible = Mods.active(&"OperatorKey")
-	%remoteLockFocused.visible = Mods.active(&"C1")
+	%remoteLockFocused.visible = Mods.active(&"RemoteLocks")
 
 func _input(event:InputEvent) -> void:
 	if !Game.editor.settingsOpen: return

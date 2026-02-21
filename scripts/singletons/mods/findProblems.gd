@@ -62,10 +62,10 @@ func _modSelected(button:ModSelectButton) -> void:
 
 func findProblems(component:GameComponent) -> void:
 	if component is Lock:
-		if &"DisconnectedLock" in modsWindow.modsRemoved:
+		if &"DisconnectedLocks" in modsWindow.modsRemoved:
 			var rect:Rect2 = Rect2(component.position, component.size)
 			var bounds:Rect2 = Rect2(component.getOffset(), component.parent.size)
-			noteProblem(&"DisconnectedLock", &"DisconnectedLock", component, !bounds.intersects(rect))
+			noteProblem(&"DisconnectedLocks", &"DisconnectedLock", component, !bounds.intersects(rect))
 	else:
 		if &"OutOfBounds" in modsWindow.modsRemoved:
 			var rect:Rect2 = Rect2(component.position, component.size)
@@ -74,41 +74,47 @@ func findProblems(component:GameComponent) -> void:
 	match component.get_script():
 		KeyBulk:
 			findColorProblems(component, component.color)
-			if &"C5" in modsWindow.modsRemoved:
-				noteProblem(&"C5", &"CurseKeyType", component, component.type == KeyBulk.TYPE.CURSE)
-			if &"PartialInfKey" in modsWindow.modsRemoved:
-				noteProblem(&"PartialInfKey", &"PartialInfKey", component, component.infinite not in [0, 1])
+			if &"CurseKeys" in modsWindow.modsRemoved:
+				noteProblem(&"CurseKeys", &"CurseKey", component, component.type == KeyBulk.TYPE.CURSE)
+			if &"PartialInfKeys" in modsWindow.modsRemoved:
+				noteProblem(&"PartialInfKeys", &"PartialInfKey", component, component.infinite not in [0, 1])
 			if &"Glistening" in modsWindow.modsRemoved:
 				noteProblem(&"Glistening", &"GlisteningKey", component, component.glistening)
+			if &"OperatorKeys" in modsWindow.modsRemoved:
+				noteProblem(&"OperatorKeys", &"OperatorKey", component, component.type == KeyBulk.TYPE.OPERATOR)
+				noteProblem(&"OperatorKeys", &"ReciprocalKey", component, component.type == KeyBulk.TYPE.ROTOR and component.reciprocal)
 		Lock, RemoteLock:
 			findColorProblems(component, component.color)
 			if component is Lock:
-				if &"NstdLockSize" in modsWindow.modsRemoved:
-					noteProblem(&"NstdLockSize", &"NstdLockSize", component, component.parent.type != Door.TYPE.SIMPLE and component.size not in Lock.SIZES)
+				if &"MoreLockSizes" in modsWindow.modsRemoved:
+					noteProblem(&"MoreLockSizes", &"NstdLockSize", component, component.parent.type != Door.TYPE.SIMPLE and component.size not in Lock.SIZES)
 				if &"MoreLockConfigs" in modsWindow.modsRemoved:
 					noteProblem(&"MoreLockConfigs", &"NstdLockConfig", component, component.parent.type != Door.TYPE.SIMPLE and component.configuration in [
 						Lock.CONFIGURATION.spr7A, Lock.CONFIGURATION.spr9A, Lock.CONFIGURATION.spr9B, Lock.CONFIGURATION.spr10A, Lock.CONFIGURATION.spr11A, Lock.CONFIGURATION.spr13A,
 						Lock.CONFIGURATION.spr24B
 					])
-			if &"ZeroCostLock" in modsWindow.modsRemoved:
-				noteProblem(&"ZeroCostLock", &"ZeroCostLock", component, M.nex(component.count))
-			if &"C1" in modsWindow.modsRemoved:
-				noteProblem(&"C1", &"RemoteLock", component, component is RemoteLock)
-				noteProblem(&"C1", &"LockNegated", component, component.negated)
-			if &"C3" in modsWindow.modsRemoved:
-				noteProblem(&"C3", &"ExactLock", component, component.type == Lock.TYPE.EXACT)
-				noteProblem(&"C3", &"PartialBlastLock", component, component.type == Lock.TYPE.BLAST and (component.isPartial or M.neq(component.count, component.denominator)))
-				noteProblem(&"C3", &"PartialBlastLock", component, component.type == Lock.TYPE.ALL and (component.isPartial or M.neq(component.count, M.ONE) or M.neq(component.denominator, M.ONE)))
-			if &"C5" in modsWindow.modsRemoved:
-				noteProblem(&"C5", &"LockArmament", component, component.armament)
+			if &"ZeroCostLocks" in modsWindow.modsRemoved:
+				noteProblem(&"ZeroCostLocks", &"ZeroCostLock", component, M.nex(component.count))
+			if &"RemoteLocks" in modsWindow.modsRemoved:
+				noteProblem(&"RemoteLocks", &"RemoteLock", component, component is RemoteLock)
+			if &"NegatedLocks" in modsWindow.modsRemoved:
+				noteProblem(&"NegatedLocks", &"NegatedLock", component, component.negated)
+			if &"PartialBlastLocks" in modsWindow.modsRemoved:
+				noteProblem(&"PartialBlastLocks", &"PartialBlastLock", component, \
+					component.type == Lock.TYPE.BLAST and (component.isPartial or M.neq(component.count, component.denominator)) \
+					or component.type == Lock.TYPE.ALL and (component.isPartial or M.neq(component.count, M.ONE) or M.neq(component.denominator, M.ONE)))
+			if &"ExactLocks" in modsWindow.modsRemoved:
+				noteProblem(&"ExactLocks", &"ExactLock", component, component.type == Lock.TYPE.EXACT)
+			if &"Armaments" in modsWindow.modsRemoved:
+				noteProblem(&"Armaments", &"LockArmament", component, component.armament)
 			if &"Glistening" in modsWindow.modsRemoved:
 				noteProblem(&"Glistening", &"GlisteningLock", component, component.type == Lock.TYPE.GLISTENING)
 		Door:
 			findColorProblems(component, component.colorSpend)
-			if &"ZeroCopies" in modsWindow.modsRemoved:
-				noteProblem(&"ZeroCopies", &"ZeroCopies", component, M.nex(component.copies))
-			if &"InfCopies" in modsWindow.modsRemoved:
-				noteProblem(&"InfCopies", &"InfCopies", component, M.ex(component.infCopies))
+			if &"ZeroCopyDoors" in modsWindow.modsRemoved:
+				noteProblem(&"ZeroCopyDoors", &"ZeroCopyDoor", component, M.nex(component.copies))
+			if &"InfCopyDoors" in modsWindow.modsRemoved:
+				noteProblem(&"InfCopyDoors", &"InfCopyDoor", component, M.ex(component.infCopies))
 		KeyCounter:
 			if &"MoreKeyCounterWidths" in modsWindow.modsRemoved:
 				noteProblem(&"MoreKeyCounterWidths", &"NstdKeyCounterWidth", component, KeyCounter.WIDTH_AMOUNT.find(component.size.x) in [KeyCounter.WIDTH.VLONG, KeyCounter.WIDTH.EXLONG])
@@ -116,14 +122,11 @@ func findProblems(component:GameComponent) -> void:
 			findColorProblems(component, component.color)
 
 func findColorProblems(component:GameComponent, color:Game.COLOR) -> void:
-	if &"NoneColor" in modsWindow.modsRemoved:
-		noteProblem(&"NoneColor", &"NoneColor", component, color == Game.COLOR.NONE)
-	if &"C2" in modsWindow.modsRemoved:
-		noteProblem(&"C2", &"DynamiteColor", component, color == Game.COLOR.DYNAMITE)
-		noteProblem(&"C2", &"QuicksilverColor", component, color == Game.COLOR.QUICKSILVER)
-	if &"C4" in modsWindow.modsRemoved:
-		noteProblem(&"C4", &"DarkAuraColor", component, color in [Game.COLOR.MAROON, Game.COLOR.FOREST, Game.COLOR.NAVY])
-		noteProblem(&"C4", &"AuraBreakerColor", component, color in [Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI])
+	if &"NoneColor" in modsWindow.modsRemoved: noteProblem(&"NoneColor", &"NoneColorUsed", component, color == Game.COLOR.NONE)
+	if &"DynamiteColor" in modsWindow.modsRemoved: noteProblem(&"DynamiteColor", &"DynamiteColorUsed", component, color == Game.COLOR.DYNAMITE)
+	if &"QuicksilverColor" in modsWindow.modsRemoved: noteProblem(&"QuicksilverColor", &"QuicksilverColorUsed", component, color == Game.COLOR.QUICKSILVER)
+	if &"DarkAuraColors" in modsWindow.modsRemoved: noteProblem(&"DarkAuraColors", &"DarkAuraColorUsed", component, color in [Game.COLOR.MAROON, Game.COLOR.FOREST, Game.COLOR.NAVY])
+	if &"AuraBreakerColors" in modsWindow.modsRemoved: noteProblem(&"AuraBreakerColors", &"AuraBreakerColorUsed", component, color in [Game.COLOR.ICE, Game.COLOR.MUD, Game.COLOR.GRAFFITI])
 
 func noteProblem(mod:StringName, type:StringName, component:GameComponent, isProblem:bool) -> void:
 	var problem:Array = [mod, type]

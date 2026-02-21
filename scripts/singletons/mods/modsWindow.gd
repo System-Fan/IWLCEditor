@@ -40,7 +40,6 @@ func _back():
 
 func _saveChanges():
 	if Game.playState != Game.PLAY_STATE.EDIT: Game.stopTest()
-	Game.editor.focusDialog.defocus()
 	Changes.addChange(Changes.GlobalPropertyChange.new(Mods,&"activeModpack",tempActiveModpack))
 	Changes.addChange(Changes.GlobalPropertyChange.new(Mods,&"activeVersion",tempActiveVersion))
 	for mod in Mods.mods.values():
@@ -56,10 +55,12 @@ func _saveChanges():
 	var availableColors:Array[Game.COLOR] = Mods.colors()
 	for playerSpawn in Game.objects.values().filter(func(object): return object is PlayerSpawn):
 		if playerSpawn == Game.levelStart: continue
-		if &"C5" in modsRemoved: Changes.addChange(Changes.ArrayElementChange.new(playerSpawn,&"curse",Game.COLOR.BROWN,true))
+		if &"CurseKeys" in modsRemoved: Changes.addChange(Changes.ArrayElementChange.new(playerSpawn,&"curse",Game.COLOR.BROWN,true))
 		for color in Game.COLORS:
 			if color in availableColors: continue
 			playerSpawn.resetColor(color)
+	
+	if Game.editor.focusDialog.interacted: Game.editor.focusDialog.interacted.evaluate()
 
 	Changes.bufferSave()
 	Game.editor.grab_focus()

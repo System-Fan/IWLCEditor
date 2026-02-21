@@ -17,7 +17,7 @@ func draw() -> void:
 		if Game.editor.focusDialog.focused: drawOutline(Game.editor.focusDialog.focused,Color("#0f0a"))
 		if Game.editor.focusDialog.componentFocused: drawOutline(Game.editor.focusDialog.componentFocused,Color.RED)
 		if Game.editor.multiselect.state == Multiselect.STATE.HOLDING:
-			if Game.editor.objectHovered and Game.editor.objectHovered != Game.editor.focusDialog.focused: drawOutline(Game.editor.objectHovered,Color("#0f06"))
+			if Game.editor.objectHovered and Game.editor.objectHovered != Game.editor.focusDialog.focused: drawOutline(Game.editor.objectHovered,Color("#0f05"))
 			if Game.editor.componentHovered and Game.editor.componentHovered != Game.editor.focusDialog.componentFocused: drawOutline(Game.editor.componentHovered,Color("#f008"))
 
 func drawOutline(component:GameComponent,color:Color) -> void:

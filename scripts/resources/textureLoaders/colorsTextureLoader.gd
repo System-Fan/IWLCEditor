@@ -13,7 +13,7 @@ var textures:Dictionary[Game.COLOR,GameTextureLoader] = {} # dictionary[color,te
 
 # initialise the subloader
 func initLoader(path:String,frames:int,_params:Dictionary) -> GameTextureLoader:
-	return IndexTextureLoader.new(path, frames)
+	return GoldIndexTextureLoader.new(path, frames)
 
 # replaces $c in path with color name, and if there are more than 1 frames, puts the frame index before the .
 func _init(path:String,colorSet:Array[Game.COLOR], useIndices:bool=true, capitalised:bool=false, params:Dictionary={}) -> void:

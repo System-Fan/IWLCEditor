@@ -243,7 +243,7 @@ static func drawLock(lockDrawScaled:RID, lockDrawAuraBreaker:RID, lockDrawGlitch
 				if lockType == TYPE.EXACT and !showLock: string = "=" + string
 				var vertical:bool = lockSize.x == 18 && lockSize.y != 18 && string != ""
 
-				var symbolLast:bool = (lockType == TYPE.EXACT or lockType == TYPE.GLISTENING) and M.isNonzeroImag(lockCount) and !vertical
+				var symbolLast:bool = (lockType == TYPE.EXACT or lockType == TYPE.GLISTENING) and (M.isNonzeroImag(lockCount) or lockZeroI) and !vertical
 				if showLock and !vertical:
 					if (lockType == TYPE.EXACT):
 						if symbolLast: lockOffsetX = 6
@@ -407,12 +407,12 @@ func propertyChangedInit(property:StringName) -> void:
 
 static func lockPropertyChangedInit(lock:GameComponent, property:StringName) -> void:
 	if property == &"type":
-		if (lock.type == TYPE.BLANK or (lock.type == TYPE.ALL and !Mods.active(&"C3"))) and M.neq(lock.count, M.ONE):
+		if (lock.type == TYPE.BLANK or (lock.type == TYPE.ALL and !Mods.active(&"PartialBlastLocks"))) and M.neq(lock.count, M.ONE):
 			Changes.addChange(Changes.PropertyChange.new(lock,&"count",M.ONE))
 		if lock.type != TYPE.EXACT and lock.zeroI:
 			Changes.addChange(Changes.PropertyChange.new(lock,&"zeroI",false))
 		if lock.type == TYPE.BLAST:
-			if !Mods.active(&"C3"):
+			if !Mods.active(&"PartialBlastLocks"):
 				if M.neq(M.abs(lock.count), M.ONE): Changes.addChange(Changes.PropertyChange.new(lock,&"count",M.saxis(lock.count)))
 				if M.neq(M.axis(lock.denominator), M.axis(lock.count)): Changes.addChange(Changes.PropertyChange.new(lock,&"denominator", M.axis(lock.count)))
 		elif lock.type == TYPE.ALL:
@@ -509,7 +509,7 @@ func effectiveCount(ipow:PackedInt64Array=parent.ipow()) -> PackedInt64Array:
 func effectiveDenominator(ipow:PackedInt64Array=parent.ipow()) -> PackedInt64Array:
 	return M.times(denominator, ipow)
 
-func effectiveZeroI() -> bool: return zeroI and M.isNonzeroReal(parent.ipow())
+func effectiveZeroI() -> bool: return (zeroI != M.isNonzeroImag(parent.ipow())) and M.nex(count)
 
 func isNegative() -> bool:
 	if type in [TYPE.BLAST, TYPE.ALL]:

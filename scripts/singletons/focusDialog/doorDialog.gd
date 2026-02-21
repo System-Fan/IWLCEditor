@@ -19,7 +19,7 @@ func focus(focused:GameObject, new:bool, dontRedirect:bool) -> void: # Door or R
 		%frozen.button_pressed = focused.frozen
 		%crumbled.button_pressed = focused.crumbled
 		%painted.button_pressed = focused.painted
-		%doorOscillate.button_pressed = focused.doorOscillate
+		%doorOscillate.button_pressed = focused.oscillate
 		%realInfiniteCopy.button_pressed = M.ex(M.r(focused.infCopies))
 		%imaginaryInfiniteCopy.button_pressed = M.ex(M.i(focused.infCopies))
 		if !main.componentFocused:

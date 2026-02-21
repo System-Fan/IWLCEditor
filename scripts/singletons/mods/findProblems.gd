@@ -107,6 +107,8 @@ func findProblems(component:GameComponent) -> void:
 				noteProblem(&"ExactLocks", &"ExactLock", component, component.type == Lock.TYPE.EXACT)
 			if &"Armaments" in modsWindow.modsRemoved:
 				noteProblem(&"Armaments", &"LockArmament", component, component.armament)
+			if &"RemainderLocks" in modsWindow.modsRemoved:
+				noteProblem(&"RemainderLocks", &"RemainderLock", component, component.type == Lock.TYPE.REMAINDER)
 			if &"Glistening" in modsWindow.modsRemoved:
 				noteProblem(&"Glistening", &"GlisteningLock", component, component.type == Lock.TYPE.GLISTENING)
 		Door:

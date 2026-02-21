@@ -42,6 +42,7 @@ func getProblemName() -> String:
 		[&"AuraBreakerColors", &"AuraBreakerColorUsed"]: return "Aura Breaker Color Used"
 		[&"CurseKeys", &"CurseKey"]: return "Curse/Decurse Key"
 		[&"Armaments", &"LockArmament"]: return "Lock Armament"
+		[&"RemainderLocks", &"RemainderLock"]: return "Remainder Lock"
 
 		[&"DisconnectedLocks", &"DisconnectedLock"]: return "Disconnected Lock"
 		[&"OutOfBounds", &"OutOfBounds"]: return "Object Out of Bounds"

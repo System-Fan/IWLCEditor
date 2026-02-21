@@ -7,7 +7,7 @@ class_name SelectMods
 
 # the way the select tree is laid out
 static var ModTree:Array = [
-	&"PartialInfKeys", &"Glistening", &"OperatorKeys",&"RemainderLocks",
+	&"PartialInfKeys", &"Glistening", &"OperatorKeys",
 	SubTree.new(
 		"Benign",
 		"Mods that don't do much.",
@@ -21,7 +21,7 @@ static var ModTree:Array = [
 	SubTree.new(
 		"I Wanna Lockpick: Continued",
 		"Mods that were made for the I Wanna Lockpick: Continued modpack.",
-		[&"RemoteLocks",&"NegatedLocks", &"DynamiteColor",&"QuicksilverColor", &"PartialBlastLocks",&"ExactLocks", &"DarkAuraColors",&"AuraBreakerColors", &"CurseKeys",&"Armaments"]
+		[&"RemoteLocks",&"NegatedLocks", &"DynamiteColor",&"QuicksilverColor", &"PartialBlastLocks",&"ExactLocks", &"DarkAuraColors",&"AuraBreakerColors", &"CurseKeys",&"Armaments",&"RemainderLocks"]
 	),
 	SubTree.new(
 		"Lockpick Editor Compatibility",

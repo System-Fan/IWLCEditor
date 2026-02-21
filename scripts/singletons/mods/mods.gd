@@ -82,6 +82,11 @@ static var mods:Dictionary[StringName, Mod] = {
 		"Adds Armaments from world 5 of IWL:C",
 		[&"LockArmament"]
 	),
+	&"RemainderLocks": Mod.new(
+		"Remainder Locks",
+		"Adds Remainder Locks from world 6 of IWL:C. Added by Bored",
+		[&"RemainderLock"]
+	),
 	&"DisconnectedLocks": Mod.new(
 		"Disconnected Locks",
 		"Allows locks of a door to be visually disconnected from it",
@@ -117,11 +122,6 @@ static var mods:Dictionary[StringName, Mod] = {
 		"Adds Operator keys and Reciprocal keys. Added by Bored",
 		[&"OperatorKey", &"ReciprocalKey"]
 	),
-	&"RemainderLocks": Mod.new(
-		"Remainder Locks",
-		"Adds Remainder Locks. Added by Bored",
-		[&"RemainderLock"]
-	)
 }
 
 static var modpacks:Dictionary[StringName, Modpack] = {
@@ -156,7 +156,7 @@ static var modpacks:Dictionary[StringName, Modpack] = {
 				"202?-??-??",
 				"Includes mechanics from C1-C6. If you want to submit levels for IWL:C, you should use this.",
 				"https://github.com/I-Wanna-Lockpick-Community/IWannaLockpick-Continued",
-				[&"RemoteLocks", &"NegatedLocks", &"DynamiteColor", &"QuicksilverColor", &"PartialBlastLocks", &"ExactLocks", &"DarkAuraColors", &"AuraBreakerColors", &"CurseKeys", &"Armaments", &"Fractions", &"OperatorKeys"]
+				[&"RemoteLocks", &"NegatedLocks", &"DynamiteColor", &"QuicksilverColor", &"PartialBlastLocks", &"ExactLocks", &"DarkAuraColors", &"AuraBreakerColors", &"CurseKeys", &"Armaments", &"Fractions", &"OperatorKeys",&"RemainderLocks"]
 			)
 		], 1
 	)
